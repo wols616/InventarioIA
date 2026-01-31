@@ -1,10 +1,6 @@
-<!doctype html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Ver Activo</title>
-</head>
-<body>
+@extends('layouts.app')
+
+@section('content')
     <h1>Activo #{{ $activo->id_activo }}</h1>
 
     <ul>
@@ -20,5 +16,4 @@
         <a href="{{ route('activos.edit', $activo) }}">Editar</a>
         <a href="{{ route('activos.index') }}">Volver</a>
     </p>
-</body>
-</html>
+@endsection

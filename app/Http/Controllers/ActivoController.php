@@ -15,7 +15,10 @@ class ActivoController extends Controller
 
     public function create()
     {
-        return view('activos.create');
+        $tipos = \App\Models\TipoActivo::all();
+        $estados = \App\Models\EstadoActivo::all();
+        $ubicaciones = \App\Models\UbicacionFisica::with('area')->get();
+        return view('activos.create', compact('tipos', 'estados', 'ubicaciones'));
     }
 
     public function store(Request $request)
@@ -44,7 +47,10 @@ class ActivoController extends Controller
 
     public function edit(Activo $activo)
     {
-        return view('activos.edit', compact('activo'));
+        $tipos = \App\Models\TipoActivo::all();
+        $estados = \App\Models\EstadoActivo::all();
+        $ubicaciones = \App\Models\UbicacionFisica::with('area')->get();
+        return view('activos.edit', compact('activo', 'tipos', 'estados', 'ubicaciones'));
     }
 
     public function update(Request $request, Activo $activo)

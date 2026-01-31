@@ -27,4 +27,19 @@ class Activo extends Model
         'fecha_adquisicion' => 'date',
         'valor_adquisicion' => 'decimal:2',
     ];
+
+    public function tipo()
+    {
+        return $this->belongsTo(TipoActivo::class, 'id_tipo', 'id_tipo');
+    }
+
+    public function estado()
+    {
+        return $this->belongsTo(EstadoActivo::class, 'id_estado', 'id_estado');
+    }
+
+    public function ubicacion()
+    {
+        return $this->belongsTo(UbicacionFisica::class, 'id_ubicacion_actual', 'id_ubicacion');
+    }
 }

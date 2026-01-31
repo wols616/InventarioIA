@@ -1,10 +1,6 @@
-<!doctype html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Editar Activo</title>
-</head>
-<body>
+@extends('layouts.app')
+
+@section('content')
     <h1>Editar Activo #{{ $activo->id_activo }}</h1>
 
     @if ($errors->any())
@@ -21,16 +17,35 @@
         @csrf
         @method('PUT')
         <div>
-            <label>id_tipo (int)</label>
-            <input type="number" name="id_tipo" value="{{ old('id_tipo', $activo->id_tipo) }}" required>
+            <label>Tipo</label>
+            <select name="id_tipo" required>
+                <option value="">-- Seleccione tipo --</option>
+                @foreach($tipos as $tipo)
+                    <option value="{{ $tipo->id_tipo }}" {{ (old('id_tipo', $activo->id_tipo) == $tipo->id_tipo) ? 'selected' : '' }}>{{ $tipo->nombre }}</option>
+                @endforeach
+            </select>
         </div>
+
         <div>
-            <label>id_estado (int)</label>
-            <input type="number" name="id_estado" value="{{ old('id_estado', $activo->id_estado) }}" required>
+            <label>Estado</label>
+            <select name="id_estado" required>
+                <option value="">-- Seleccione estado --</option>
+                @foreach($estados as $estado)
+                    <option value="{{ $estado->id_estado }}" {{ (old('id_estado', $activo->id_estado) == $estado->id_estado) ? 'selected' : '' }}>{{ $estado->nombre }}</option>
+                @endforeach
+            </select>
         </div>
+
         <div>
-            <label>id_ubicacion_actual (int)</label>
-            <input type="number" name="id_ubicacion_actual" value="{{ old('id_ubicacion_actual', $activo->id_ubicacion_actual) }}">
+            <label>Ubicación</label>
+            <select name="id_ubicacion_actual">
+                <option value="">-- Sin ubicación --</option>
+                @foreach($ubicaciones as $ubicacion)
+                    <option value="{{ $ubicacion->id_ubicacion }}" {{ (old('id_ubicacion_actual', $activo->id_ubicacion_actual) == $ubicacion->id_ubicacion) ? 'selected' : '' }}>
+                        {{ $ubicacion->nombre }}@if($ubicacion->area) ({{ $ubicacion->area->nombre }})@endif
+                    </option>
+                @endforeach
+            </select>
         </div>
         <div>
             <label>codigo</label>
@@ -61,5 +76,4 @@
             <a href="{{ route('activos.index') }}">Cancelar</a>
         </div>
     </form>
-</body>
-</html>
+@endsection

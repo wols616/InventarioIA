@@ -1,19 +1,11 @@
-<!doctype html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Activos</title>
-</head>
-<body>
-    <h1>Activos</h1>
+@extends('layouts.app')
 
-    @if(session('success'))
-        <div style="color:green">{{ session('success') }}</div>
-    @endif
+@section('content')
+    <h1>Activos</h1>
 
     <p><a href="{{ route('activos.create') }}">Crear activo</a></p>
 
-    <table border="1" cellpadding="6" cellspacing="0">
+    <table>
         <thead>
             <tr>
                 <th>ID</th>
@@ -49,5 +41,4 @@
     </table>
 
     <div style="margin-top:1rem">{{ $activos->links() }}</div>
-</body>
-</html>
+@endsection
