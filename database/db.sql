@@ -327,3 +327,20 @@ CREATE TABLE detalle_auditoria (
         FOREIGN KEY (id_activo)
         REFERENCES activos(id_activo)
 );
+
+-- 23. USUARIOS
+-- =========================
+CREATE TABLE usuarios (
+    id_usuario SERIAL PRIMARY KEY,
+    id_persona INT NOT NULL UNIQUE,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    ultimo_login TIMESTAMP,
+    estado BOOLEAN NOT NULL DEFAULT true,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_usuario_persona
+        FOREIGN KEY (id_persona)
+        REFERENCES personas(id_persona)
+        ON DELETE CASCADE
+);

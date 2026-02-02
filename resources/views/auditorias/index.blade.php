@@ -5,12 +5,14 @@
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex justify-between items-center">
                 <h1 class="text-2xl font-bold text-gray-900">Auditorías de Inventario</h1>
-                <a href="{{ route('auditorias.create') }}" class="bg-brand-600 hover:bg-brand-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 flex items-center">
+                @if(isset($authUser) && in_array(($authUser->persona->rol->nombre ?? ''), ['Admin','Auditor']))
+                    <a href="{{ route('auditorias.create') }}" class="bg-brand-600 hover:bg-brand-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
                     Crear Auditoría
-                </a>
+                    </a>
+                @endif
             </div>
         </div>
 
@@ -42,12 +44,14 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                             <a href="{{ route('auditorias.show', $a) }}" class="text-brand-600 hover:text-brand-900">Ver</a>
-                            <a href="{{ route('auditorias.edit', $a) }}" class="text-indigo-600 hover:text-indigo-900">Editar</a>
-                            <form action="{{ route('auditorias.destroy', $a) }}" method="POST" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" onclick="return confirm('¿Eliminar?')" class="text-red-600 hover:text-red-900">Eliminar</button>
-                            </form>
+                            @if(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Admin')
+                                <a href="{{ route('auditorias.edit', $a) }}" class="text-indigo-600 hover:text-indigo-900">Editar</a>
+                                <form action="{{ route('auditorias.destroy', $a) }}" method="POST" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" onclick="return confirm('¿Eliminar?')" class="text-red-600 hover:text-red-900">Eliminar</button>
+                                </form>
+                            @endif
                         </td>
                     </tr>
                 @endforeach

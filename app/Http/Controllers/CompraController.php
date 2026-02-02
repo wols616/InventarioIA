@@ -108,6 +108,88 @@ class CompraController extends Controller
         return view('compras.show', compact('compra'));
     }
 
+    public function edit(Compra $compra)
+    {
+        $proveedores = Proveedor::orderBy('nombre')->get();
+        $activos = Activo::orderBy('codigo')->get();
+        $compra->load('detalles.activo');
+        return view('compras.edit', compact('compra', 'proveedores', 'activos'));
+    }
+
+    public function update(Request $request, Compra $compra)
+    {
+        $data = $request->validate([
+            'id_proveedor' => 'required|exists:proveedores,id_proveedor',
+            'fecha_compra' => 'required|date',
+            'id_activo' => 'required|array|min:1',
+            'id_activo.*' => 'required|exists:activos,id_activo',
+            'cantidad' => 'required|array',
+            'cantidad.*' => 'required|integer|min:1',
+            'costo_unitario' => 'required|array',
+            'costo_unitario.*' => 'required|numeric|min:0',
+        ]);
+
+        DB::beginTransaction();
+        try{
+            // revert inventory quantities based on existing detalles
+            foreach($compra->detalles as $old){
+                $inv = Inventario::where('id_activo', $old->id_activo)->first();
+                if($inv){
+                    $inv->cantidad = max(0, ($inv->cantidad ?? 0) - ($old->cantidad ?? 0));
+                    $inv->save();
+                }
+            }
+
+            // remove old detalles
+            DetalleCompra::where('id_compra', $compra->id_compra)->delete();
+
+            // create new detalles and update/increment inventory
+            $total = 0;
+            for($i=0;$i<count($data['id_activo']);$i++){
+                $id_activo = $data['id_activo'][$i];
+                $cantidad = intval($data['cantidad'][$i]);
+                $costo = floatval($data['costo_unitario'][$i]);
+                $subtotal = $cantidad * $costo;
+
+                DetalleCompra::create([
+                    'id_compra' => $compra->id_compra,
+                    'id_activo' => $id_activo,
+                    'cantidad' => $cantidad,
+                    'costo_unitario' => $costo,
+                    'subtotal' => $subtotal,
+                ]);
+
+                $inv = Inventario::where('id_activo', $id_activo)->first();
+                if($inv){
+                    $inv->cantidad = ($inv->cantidad ?? 0) + $cantidad;
+                    $inv->save();
+                } else {
+                    Inventario::create([
+                        'id_activo' => $id_activo,
+                        'cantidad' => $cantidad,
+                        'descripcion' => null,
+                        'cantidad_minima' => null,
+                        'cantidad_maxima' => null,
+                    ]);
+                }
+
+                $total += $subtotal;
+            }
+
+            $compra->id_proveedor = $data['id_proveedor'];
+            $compra->fecha_compra = $data['fecha_compra'];
+            $compra->monto_total = $total;
+            $compra->save();
+
+            DB::commit();
+        } catch (\Exception $e){
+            DB::rollBack();
+            return back()->withErrors(['general' => 'Error al actualizar la compra: '.$e->getMessage()])->withInput();
+        }
+
+        return redirect()->route('compras.show', $compra)->with('success', 'Compra actualizada correctamente');
+    }
+
     public function destroy(Compra $compra)
     {
         // opcional: no eliminar físicamente

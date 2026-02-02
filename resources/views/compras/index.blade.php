@@ -5,12 +5,16 @@
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex justify-between items-center">
                 <h1 class="text-2xl font-bold text-gray-900">Compras</h1>
-                <a href="{{ route('compras.create') }}" class="bg-brand-600 hover:bg-brand-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    Registrar Compra
-                </a>
+                @if(isset($authUser) && in_array(($authUser->persona->rol->nombre ?? ''), ['Admin','Supervisor']))
+                    <a href="{{ route('compras.create') }}" class="bg-brand-600 hover:bg-brand-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Registrar Compra
+                    </a>
+                @elseif(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Auditor')
+                    @include('partials.disabled-button', ['label' => 'Registrar Compra'])
+                @endif
             </div>
         </div>
 
@@ -54,6 +58,18 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                     </svg>
                                 </a>
+                                @if(isset($authUser) && in_array(($authUser->persona->rol->nombre ?? ''), ['Admin','Supervisor']))
+                                    <a href="{{ route('compras.edit', $c->id_compra) }}" class="text-indigo-600 hover:text-indigo-900 p-2 hover:bg-indigo-50 rounded transition duration-200" title="Editar">Editar</a>
+                                @elseif(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Auditor')
+                                    @include('partials.disabled-button', ['label' => 'Editar'])
+                                @endif
+                                @if(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Admin')
+                                    <form action="{{ route('compras.destroy', $c->id_compra) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" onclick="return confirm('¿Eliminar compra?')" class="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded transition duration-200">Eliminar</button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                     @endforeach

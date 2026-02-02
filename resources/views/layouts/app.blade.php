@@ -29,7 +29,8 @@
     </script>
 </head>
 <body class="bg-gray-50">
-    <!-- Navigation -->
+    <!-- Navigation (visible solo si hay sesión) -->
+    @if(isset($authUser))
     <nav class="bg-gradient-to-r from-brand-800 to-brand-900 shadow-lg">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center h-16">
@@ -63,7 +64,9 @@
                                     <a href="{{ route('movimientos.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-800">Movimientos</a>
                                     <a href="{{ route('asignaciones.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-800">Asignaciones</a>
                                     <a href="{{ route('mantenimientos.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-800">Mantenimientos</a>
-                                    <a href="{{ route('auditorias.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-800">Auditorías</a>
+                                    @if(isset($authUser) && in_array(($authUser->persona->rol->nombre ?? ''), ['Admin','Auditor']))
+                                        <a href="{{ route('auditorias.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-800">Auditorías</a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -131,11 +134,27 @@
                                 <div class="py-1">
                                     <a href="{{ route('personas.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-800">Personas</a>
                                     <a href="{{ route('departamentos.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-800">Departamentos</a>
-                                    <a href="{{ route('roles.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-800">Roles</a>
+                                    @if(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Admin')
+                                        <a href="{{ route('roles.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-800">Roles</a>
+                                        <a href="{{ route('usuarios.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-800">Usuarios</a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Auth area -->
+                <div class="hidden md:flex items-center space-x-4">
+                    @if(isset($authUser))
+                        <span class="text-white text-sm">{{ $authUser->username }} ({{ $authUser->persona->rol->nombre ?? '' }})</span>
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="bg-white text-brand-800 px-3 py-1 rounded">Cerrar sesión</button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="text-white px-3 py-2 rounded-md text-sm font-medium">Iniciar sesión</a>
+                    @endif
                 </div>
 
                 <!-- Mobile menu button -->
@@ -157,19 +176,26 @@
                 <a href="{{ route('movimientos.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Movimientos</a>
                 <a href="{{ route('asignaciones.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Asignaciones</a>
                 <a href="{{ route('mantenimientos.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Mantenimientos</a>
-                <a href="{{ route('auditorias.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Auditorías</a>
+                @if(isset($authUser) && in_array(($authUser->persona->rol->nombre ?? ''), ['Admin','Auditor']))
+                    <a href="{{ route('auditorias.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Auditorías</a>
+                @endif
                 <a href="{{ route('tipos.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Tipos</a>
                 <a href="{{ route('categorias.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Categorías</a>
                 <a href="{{ route('estados.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Estados</a>
                 <a href="{{ route('ubicaciones.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Ubicaciones</a>
-                <a href="{{ route('compras.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Compras</a>
-                <a href="{{ route('proveedores.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Proveedores</a>
-                <a href="{{ route('personas.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Personas</a>
-                <a href="{{ route('departamentos.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Departamentos</a>
-                <a href="{{ route('roles.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Roles</a>
+                @if(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Admin')
+                    <a href="{{ route('compras.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Compras</a>
+                    <a href="{{ route('proveedores.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Proveedores</a>
+                    <a href="{{ route('roles.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Roles</a>
+                    <a href="{{ route('usuarios.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Usuarios</a>
+                @else
+                    <a href="{{ route('personas.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Personas</a>
+                    <a href="{{ route('departamentos.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Departamentos</a>
+                @endif
             </div>
         </div>
-    </nav>
+        </nav>
+    @endif
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto py-6 px-4">

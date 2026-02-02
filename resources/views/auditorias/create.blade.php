@@ -27,18 +27,24 @@
                 </div>
             @endif
 
-            <form action="{{ route('auditorias.store') }}" method="POST" class="space-y-6">
+            @if(isset($authUser) && in_array(($authUser->persona->rol->nombre ?? ''), ['Admin','Auditor']))
+                <form action="{{ route('auditorias.store') }}" method="POST" class="space-y-6">
                 @csrf
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="id_persona" class="block text-sm font-medium text-gray-700 mb-2">Persona *</label>
-                        <select name="id_persona" id="id_persona" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
-                            <option value="">-- Seleccione persona --</option>
-                            @foreach($personas as $p)
-                                <option value="{{ $p->id_persona }}" {{ old('id_persona') == $p->id_persona ? 'selected' : '' }}>{{ $p->nombre }} {{ $p->apellido }}</option>
-                            @endforeach
-                        </select>
+                        @if(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Auditor')
+                            <input type="hidden" name="id_persona" value="{{ $authUser->persona->id_persona }}">
+                            <div class="px-3 py-2 border border-gray-200 rounded-md bg-gray-50 text-sm text-gray-700">{{ $authUser->persona->nombre }} {{ $authUser->persona->apellido }}</div>
+                        @else
+                            <select name="id_persona" id="id_persona" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                                <option value="">-- Seleccione persona --</option>
+                                @foreach($personas as $p)
+                                    <option value="{{ $p->id_persona }}" {{ old('id_persona') == $p->id_persona ? 'selected' : '' }}>{{ $p->nombre }} {{ $p->apellido }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                     </div>
 
                     <div>
@@ -103,7 +109,12 @@
                         Crear Auditoría
                     </button>
                 </div>
-            </form>
+                </form>
+            @else
+                <div class="p-6 text-center">
+                    <p class="text-gray-600">No tiene permiso para crear auditorías.</p>
+                </div>
+            @endif
         </div>
     </div>
 

@@ -14,12 +14,16 @@
                 </h1>
                 @if($activoId)
                     <div class="flex space-x-3">
-                        <a href="{{ route('documentos.create', ['activo' => $activoId]) }}" class="bg-brand-600 hover:bg-brand-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 flex items-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                            Agregar Documento
-                        </a>
+                        @if(isset($authUser) && in_array(($authUser->persona->rol->nombre ?? ''), ['Admin','Supervisor']))
+                            <a href="{{ route('documentos.create', ['activo' => $activoId]) }}" class="bg-brand-600 hover:bg-brand-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Agregar Documento
+                            </a>
+                        @elseif(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Auditor')
+                            @include('partials.disabled-button', ['label' => 'Agregar Documento'])
+                        @endif
                         <a href="{{ route('activos.show', $activoId) }}" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition duration-200 flex items-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -95,15 +99,19 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <form action="{{ route('documentos.destroy', $d) }}" method="POST" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" onclick="return confirm('¿Está seguro de eliminar este documento?')" class="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded transition duration-200" title="Eliminar">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                            </svg>
-                                        </button>
-                                    </form>
+                                    @if(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Admin')
+                                        <form action="{{ route('documentos.destroy', $d) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" onclick="return confirm('¿Está seguro de eliminar este documento?')" class="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded transition duration-200" title="Eliminar">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @elseif(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Auditor')
+                                        @include('partials.disabled-button', ['label' => 'Eliminar'])
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -117,11 +125,22 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-2">No hay documentos</h3>
                     <p class="text-gray-500 mb-6">{{ $activoId ? 'Este activo no tiene documentos adjuntos.' : 'No se encontraron documentos en el sistema.' }}</p>
                     @if($activoId)
-                        <a href="{{ route('documentos.create', ['activo' => $activoId]) }}" class="bg-brand-600 hover:bg-brand-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 inline-flex items-center">
+                        @if(isset($authUser) && in_array(($authUser->persona->rol->nombre ?? ''), ['Admin','Supervisor']))
+                            <a href="{{ route('documentos.create', ['activo' => $activoId]) }}" class="bg-brand-600 hover:bg-brand-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 inline-flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Agregar Primer Documento
+                            </a>
+                        @elseif(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Auditor')
+                            @include('partials.disabled-button', ['label' => 'Agregar Primer Documento'])
+                        @endif
+
+                        <a href="{{ route('activos.show', $activoId) }}" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition duration-200 inline-flex items-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                             </svg>
-                            Agregar Primer Documento
+                            Volver al Activo
                         </a>
                     @endif
                 </div>

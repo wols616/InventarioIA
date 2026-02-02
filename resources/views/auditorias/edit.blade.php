@@ -27,7 +27,8 @@
                 </div>
             @endif
 
-            <form action="{{ route('auditorias.update', $auditoria) }}" method="POST" class="space-y-6">
+            @if(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Admin')
+                <form action="{{ route('auditorias.update', $auditoria) }}" method="POST" class="space-y-6">
                 @csrf
                 @method('PUT')
 
@@ -106,7 +107,12 @@
                         Actualizar Auditoría
                     </button>
                 </div>
-            </form>
+                </form>
+            @else
+                <div class="p-6 text-center">
+                    <p class="text-gray-600">No tiene permiso para editar esta auditoría.</p>
+                </div>
+            @endif
         </div>
     </div>
 

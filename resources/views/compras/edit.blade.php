@@ -3,7 +3,7 @@
 @section('content')
     <div class="bg-white rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200">
-            <h1 class="text-2xl font-bold text-gray-900">Registrar Compra</h1>
+            <h1 class="text-2xl font-bold text-gray-900">Editar Compra {{ $compra->numero_factura }}</h1>
         </div>
 
         <div class="p-6">
@@ -27,8 +27,9 @@
                 </div>
             @endif
 
-            <form id="compraForm" action="{{ route('compras.store') }}" method="POST" class="space-y-6">
+            <form id="compraForm" action="{{ route('compras.update', $compra->id_compra) }}" method="POST" class="space-y-6">
                 @csrf
+                @method('PUT')
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -36,14 +37,14 @@
                         <select name="id_proveedor" id="id_proveedor" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                             <option value="">-- Seleccione proveedor --</option>
                             @foreach($proveedores as $p)
-                                <option value="{{ $p->id_proveedor }}">{{ $p->nombre }}</option>
+                                <option value="{{ $p->id_proveedor }}" {{ $compra->id_proveedor == $p->id_proveedor ? 'selected' : '' }}>{{ $p->nombre }}</option>
                             @endforeach
                         </select>
                     </div>
 
                     <div>
                         <label for="fecha_compra" class="block text-sm font-medium text-gray-700 mb-2">Fecha de Compra *</label>
-                        <input type="date" name="fecha_compra" id="fecha_compra" value="{{ date('Y-m-d') }}" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                        <input type="date" name="fecha_compra" id="fecha_compra" value="{{ old('fecha_compra', $compra->fecha_compra ? \Carbon\Carbon::parse($compra->fecha_compra)->format('Y-m-d') : date('Y-m-d')) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                     </div>
                 </div>
 
@@ -70,28 +71,24 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($compra->detalles as $d)
                                 <tr>
                                     <td class="px-4 py-3">
                                         <select name="id_activo[]" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                                             <option value="">-- Seleccione activo --</option>
                                             @foreach($activos as $a)
-                                                <option value="{{ $a->id_activo }}">{{ $a->codigo }} - {{ $a->marca }} {{ $a->modelo }}</option>
+                                                <option value="{{ $a->id_activo }}" {{ $d->id_activo == $a->id_activo ? 'selected' : '' }}>{{ $a->codigo }} - {{ $a->marca }} {{ $a->modelo }}</option>
                                             @endforeach
                                         </select>
-                                        @if(isset($authUser) && in_array(($authUser->persona->rol->nombre ?? ''), ['Admin','Supervisor']))
-                                            <a href="{{ route('activos.create') }}" class="text-sm text-brand-600 hover:text-brand-800 mt-1 block">Crear activo</a>
-                                        @elseif(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Auditor')
-                                            @include('partials.disabled-button', ['label' => 'Crear activo'])
-                                        @endif
                                     </td>
                                     <td class="px-4 py-3">
-                                        <input type="number" name="cantidad[]" min="1" value="1" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                                        <input type="number" name="cantidad[]" min="1" value="{{ old('cantidad[]', $d->cantidad) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                                     </td>
                                     <td class="px-4 py-3">
-                                        <input type="number" step="0.01" name="costo_unitario[]" min="0" value="0.00" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                                        <input type="number" step="0.01" name="costo_unitario[]" min="0" value="{{ old('costo_unitario[]', $d->costo_unitario) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                                     </td>
                                     <td class="px-4 py-3">
-                                        <div class="subtotal font-semibold text-gray-900">$0.00</div>
+                                        <div class="subtotal font-semibold text-gray-900">{{ number_format($d->subtotal, 2) }}</div>
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <button type="button" class="remove text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded transition duration-200" title="Eliminar">
@@ -101,6 +98,7 @@
                                         </button>
                                     </td>
                                 </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -108,7 +106,7 @@
                     <div class="mt-6 bg-gray-50 p-4 rounded-lg">
                         <div class="flex justify-between items-center">
                             <span class="text-lg font-medium text-gray-900">Total General:</span>
-                            <span class="text-2xl font-bold text-green-600">$<span id="total">0.00</span></span>
+                            <span class="text-2xl font-bold text-green-600">$<span id="total">{{ number_format($compra->monto_total,2) }}</span></span>
                         </div>
                     </div>
                 </div>
@@ -121,7 +119,7 @@
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        Registrar Compra
+                        Actualizar Compra
                     </button>
                 </div>
             </form>
