@@ -41,10 +41,19 @@
             <label>Nombre</label>
             <input type="text" name="nombre" value="{{ old('nombre', $ubicacion->nombre) }}">
         </div>
+        <div>
+            <label>Código interno</label>
+            <input type="text" name="codigo_interno" value="{{ old('codigo_interno', $ubicacion->codigo_interno) }}">
+        </div>
+        <div>
+            <label>Descripción detallada</label>
+            <textarea name="descripcion_detallada">{{ old('descripcion_detallada', $ubicacion->descripcion_detallada) }}</textarea>
+        </div>
+        <div>
+            <label><input type="checkbox" name="estado" value="1" {{ old('estado', $ubicacion->estado) ? 'checked' : '' }}> Activo</label>
+        </div>
         <div style="margin-top:8px">
-            <a href="{{ route('edificios.index') }}">Ver/gestionar Edificios</a>
-            &nbsp;|&nbsp;
-            <a href="{{ route('pisos.index') }}">Ver/gestionar Pisos</a>
+            <a href="{{ route('areas.index') }}">Ver/gestionar Áreas</a>
         </div>
         <div>
             <button type="submit">Actualizar</button>

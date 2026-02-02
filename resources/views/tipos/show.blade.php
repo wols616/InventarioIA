@@ -1,10 +1,3 @@
-<!doctype html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Ver Tipo</title>
-</head>
-<body>
 @extends('layouts.app')
 
 @section('content')
@@ -12,8 +5,12 @@
 
     <ul>
         <li>Nombre: {{ $tipo->nombre }}</li>
-        <li>Categoria ID: {{ $tipo->id_categoria }}</li>
+        <li>Categoria: {{ $tipo->categoria ? $tipo->categoria->nombre : $tipo->id_categoria }}</li>
         <li>Descripcion: {{ $tipo->descripcion }}</li>
+        <li>Requiere serie: {{ $tipo->requiere_serie ? 'Sí' : 'No' }}</li>
+        <li>Requiere marca: {{ $tipo->requiere_marca ? 'Sí' : 'No' }}</li>
+        <li>Requiere modelo: {{ $tipo->requiere_modelo ? 'Sí' : 'No' }}</li>
+        <li>Requiere especificaciones: {{ $tipo->requiere_especificaciones ? 'Sí' : 'No' }}</li>
     </ul>
 
     <p>
@@ -21,5 +18,3 @@
         <a href="{{ route('tipos.index') }}">Volver</a>
     </p>
 @endsection
-</body>
-</html>

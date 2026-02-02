@@ -27,6 +27,10 @@
             </select>
         </div>
         <div>
+            <label>Anotación</label>
+            <textarea name="anotacion">{{ old('anotacion') }}</textarea>
+        </div>
+        <div>
             <button type="submit">Crear</button>
             <a href="{{ route('estados.index') }}">Cancelar</a>
         </div>

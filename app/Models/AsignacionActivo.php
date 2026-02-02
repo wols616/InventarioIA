@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class AsignacionActivo extends Model
 {
+    use HasFactory;
+
     protected $table = 'asignaciones_activos';
     protected $primaryKey = 'id_asignacion';
     public $timestamps = false;
@@ -19,6 +22,13 @@ class AsignacionActivo extends Model
         'estado',
     ];
 
+    protected $casts = [
+        'es_responsable_principal' => 'boolean',
+        'estado' => 'boolean',
+        'fecha_asignacion' => 'date',
+        'fecha_fin' => 'date',
+    ];
+
     public function activo()
     {
         return $this->belongsTo(Activo::class, 'id_activo', 'id_activo');
@@ -29,3 +39,4 @@ class AsignacionActivo extends Model
         return $this->belongsTo(Persona::class, 'id_persona', 'id_persona');
     }
 }
+

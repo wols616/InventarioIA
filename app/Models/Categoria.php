@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class Categoria extends Model
+/**
+ * Deprecated compatibility class.
+ * Use `CategoriaActivo` (table `categorias_activos`) instead.
+ */
+class Categoria extends CategoriaActivo
 {
-    protected $table = 'categorias';
-    protected $primaryKey = 'id_categoria';
-    public $timestamps = false;
-    protected $fillable = ['nombre', 'descripcion'];
+    // Intentionally empty: kept for backward compatibility.
 }

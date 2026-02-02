@@ -5,9 +5,12 @@
 
     <ul>
         <li>Nombre: {{ $ubicacion->nombre }}</li>
+        <li>Código interno: {{ $ubicacion->codigo_interno ?? '-' }}</li>
         <li>Area: {{ $ubicacion->area ? $ubicacion->area->nombre : '-' }}</li>
         <li>Piso: {{ $ubicacion->area && $ubicacion->area->piso ? $ubicacion->area->piso->numero_piso : '-' }}</li>
         <li>Edificio: {{ $ubicacion->area && $ubicacion->area->piso && $ubicacion->area->piso->edificio ? $ubicacion->area->piso->edificio->nombre : '-' }}</li>
+        <li>Descripción detallada: {{ $ubicacion->descripcion_detallada ?? '-' }}</li>
+        <li>Estado: {{ $ubicacion->estado ? 'Activo' : 'Inactivo' }}</li>
     </ul>
 
     <p>
@@ -16,9 +19,7 @@
     </p>
 
     <p>
-        <a href="{{ route('edificios.index') }}">Ver/gestionar Edificios</a>
-        &nbsp;|&nbsp;
-        <a href="{{ route('pisos.index') }}">Ver/gestionar Pisos</a>
+        <a href="{{ route('areas.index') }}">Ver/gestionar Áreas</a>
     </p>
 
 @endsection

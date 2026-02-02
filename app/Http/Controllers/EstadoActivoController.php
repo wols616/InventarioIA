@@ -23,6 +23,7 @@ class EstadoActivoController extends Controller
         $data = $request->validate([
             'nombre' => 'required|string|max:50',
             'es_operativo' => 'required|boolean',
+            'anotacion' => 'nullable|string',
         ]);
         $estado = EstadoActivo::create($data);
         if ($request->wantsJson()) {
@@ -44,6 +45,7 @@ class EstadoActivoController extends Controller
         $data = $request->validate([
             'nombre' => 'required|string|max:50',
             'es_operativo' => 'required|boolean',
+            'anotacion' => 'nullable|string',
         ]);
         $estado->update($data);
         if ($request->wantsJson()) {

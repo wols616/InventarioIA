@@ -23,7 +23,11 @@ class UbicacionFisicaController extends Controller
         $data = $request->validate([
             'id_area' => 'required|integer',
             'nombre' => 'nullable|string|max:100',
+            'codigo_interno' => 'nullable|string|max:50',
+            'descripcion_detallada' => 'nullable|string',
+            'estado' => 'nullable|boolean',
         ]);
+        $data['estado'] = $request->boolean('estado');
         $ubic = UbicacionFisica::create($data);
         if ($request->wantsJson()) {
             return $ubic;
@@ -45,7 +49,11 @@ class UbicacionFisicaController extends Controller
         $data = $request->validate([
             'id_area' => 'required|integer',
             'nombre' => 'nullable|string|max:100',
+            'codigo_interno' => 'nullable|string|max:50',
+            'descripcion_detallada' => 'nullable|string',
+            'estado' => 'nullable|boolean',
         ]);
+        $data['estado'] = $request->boolean('estado');
         $ubicacion->update($data);
         if ($request->wantsJson()) {
             return $ubicacion;

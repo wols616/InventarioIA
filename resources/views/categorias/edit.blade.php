@@ -25,6 +25,16 @@
             <textarea name="descripcion">{{ old('descripcion', $categoria->descripcion) }}</textarea>
         </div>
         <div>
+            <label>Vida útil estimada (meses)</label>
+            <input type="number" name="vida_util_estimada_meses" value="{{ old('vida_util_estimada_meses', $categoria->vida_util_estimada_meses) }}" min="0">
+        </div>
+        <div>
+            <label><input type="checkbox" name="depreciable" {{ old('depreciable', $categoria->depreciable) ? 'checked' : '' }}> Depreciable</label>
+        </div>
+        <div>
+            <label><input type="checkbox" name="activo" {{ old('activo', $categoria->activo) ? 'checked' : '' }}> Activo</label>
+        </div>
+        <div>
             <button type="submit">Guardar</button>
             <a href="{{ route('categorias.index') }}">Cancelar</a>
         </div>

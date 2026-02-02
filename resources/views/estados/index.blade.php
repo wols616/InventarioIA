@@ -10,6 +10,7 @@
             <tr>
                 <th>ID</th>
                 <th>Nombre</th>
+                <th>Anotación</th>
                 <th>Operativo</th>
                 <th>Acciones</th>
             </tr>
@@ -19,6 +20,7 @@
                 <tr>
                     <td>{{ $estado->id_estado }}</td>
                     <td>{{ $estado->nombre }}</td>
+                    <td>{{ $estado->anotacion ?? '-' }}</td>
                     <td>{{ $estado->es_operativo ? 'Sí' : 'No' }}</td>
                     <td>
                         <a href="{{ route('estados.show', $estado) }}">Ver</a>

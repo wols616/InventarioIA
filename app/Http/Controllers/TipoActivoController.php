@@ -27,7 +27,19 @@ class TipoActivoController extends Controller
         $data = $request->validate([
             'id_categoria' => 'required|integer',
             'nombre' => 'required|string|max:100',
+            'descripcion' => 'nullable|string',
+            'requiere_serie' => 'sometimes|boolean',
+            'requiere_marca' => 'sometimes|boolean',
+            'requiere_modelo' => 'sometimes|boolean',
+            'requiere_especificaciones' => 'sometimes|boolean',
         ]);
+
+        // ensure boolean fields are present (checkboxes may be missing)
+        $data['requiere_serie'] = $request->has('requiere_serie') ? 1 : 0;
+        $data['requiere_marca'] = $request->has('requiere_marca') ? 1 : 0;
+        $data['requiere_modelo'] = $request->has('requiere_modelo') ? 1 : 0;
+        $data['requiere_especificaciones'] = $request->has('requiere_especificaciones') ? 1 : 0;
+
         $tipo = TipoActivo::create($data);
         if($request->wantsJson()){
             return $tipo;
@@ -54,7 +66,18 @@ class TipoActivoController extends Controller
         $data = $request->validate([
             'id_categoria' => 'required|integer',
             'nombre' => 'required|string|max:100',
+            'descripcion' => 'nullable|string',
+            'requiere_serie' => 'sometimes|boolean',
+            'requiere_marca' => 'sometimes|boolean',
+            'requiere_modelo' => 'sometimes|boolean',
+            'requiere_especificaciones' => 'sometimes|boolean',
         ]);
+
+        $data['requiere_serie'] = $request->has('requiere_serie') ? 1 : 0;
+        $data['requiere_marca'] = $request->has('requiere_marca') ? 1 : 0;
+        $data['requiere_modelo'] = $request->has('requiere_modelo') ? 1 : 0;
+        $data['requiere_especificaciones'] = $request->has('requiere_especificaciones') ? 1 : 0;
+
         $tipo->update($data);
         if($request->wantsJson()){
             return $tipo;

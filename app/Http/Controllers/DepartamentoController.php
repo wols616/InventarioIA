@@ -23,7 +23,10 @@ class DepartamentoController extends Controller
         $data = $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
+            'estado' => 'nullable|boolean',
         ]);
+
+        $data['estado'] = $request->boolean('estado');
 
         Departamento::create($data);
         return redirect()->route('departamentos.index')->with('success', 'Departamento creado.');
@@ -44,7 +47,10 @@ class DepartamentoController extends Controller
         $data = $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
+            'estado' => 'nullable|boolean',
         ]);
+
+        $data['estado'] = $request->boolean('estado');
 
         $departamento->update($data);
         return redirect()->route('departamentos.index')->with('success', 'Departamento actualizado.');

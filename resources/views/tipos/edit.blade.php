@@ -1,10 +1,3 @@
-<!doctype html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Editar Tipo</title>
-</head>
-<body>
 @extends('layouts.app')
 
 @section('content')
@@ -37,10 +30,24 @@
             <input type="text" name="nombre" value="{{ old('nombre', $tipo->nombre) }}" required>
         </div>
         <div>
+            <label>Descripción</label>
+            <textarea name="descripcion">{{ old('descripcion', $tipo->descripcion) }}</textarea>
+        </div>
+        <div>
+            <label><input type="checkbox" name="requiere_serie" value="1" {{ old('requiere_serie', $tipo->requiere_serie) ? 'checked' : '' }}> Requiere número de serie</label>
+        </div>
+        <div>
+            <label><input type="checkbox" name="requiere_marca" value="1" {{ old('requiere_marca', $tipo->requiere_marca) ? 'checked' : '' }}> Requiere marca</label>
+        </div>
+        <div>
+            <label><input type="checkbox" name="requiere_modelo" value="1" {{ old('requiere_modelo', $tipo->requiere_modelo) ? 'checked' : '' }}> Requiere modelo</label>
+        </div>
+        <div>
+            <label><input type="checkbox" name="requiere_especificaciones" value="1" {{ old('requiere_especificaciones', $tipo->requiere_especificaciones) ? 'checked' : '' }}> Requiere especificaciones</label>
+        </div>
+        <div>
             <button type="submit">Actualizar</button>
             <a href="{{ route('tipos.index') }}">Cancelar</a>
         </div>
     </form>
 @endsection
-</body>
-</html>

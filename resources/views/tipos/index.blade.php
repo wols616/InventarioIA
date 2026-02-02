@@ -12,8 +12,13 @@
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Categoria</th>
+                <th>Categoría</th>
                 <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Requiere serie</th>
+                <th>Requiere marca</th>
+                <th>Requiere modelo</th>
+                <th>Requiere especificaciones</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -23,6 +28,11 @@
                     <td>{{ $tipo->id_tipo }}</td>
                     <td>{{ $tipo->categoria ? $tipo->categoria->nombre : '-' }}</td>
                     <td>{{ $tipo->nombre }}</td>
+                    <td>{{ $tipo->descripcion }}</td>
+                    <td>{{ $tipo->requiere_serie ? 'S' : 'N' }}</td>
+                    <td>{{ $tipo->requiere_marca ? 'S' : 'N' }}</td>
+                    <td>{{ $tipo->requiere_modelo ? 'S' : 'N' }}</td>
+                    <td>{{ $tipo->requiere_especificaciones ? 'S' : 'N' }}</td>
                     <td>
                         <a href="{{ route('tipos.show', $tipo) }}">Ver</a>
                         <a href="{{ route('tipos.edit', $tipo) }}">Editar</a>

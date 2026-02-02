@@ -27,3 +27,4 @@ class Compra extends Model
         return $this->hasMany(DetalleCompra::class, 'id_compra', 'id_compra');
     }
 }
+

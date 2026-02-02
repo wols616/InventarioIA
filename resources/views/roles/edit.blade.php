@@ -25,6 +25,9 @@
             <textarea name="descripcion">{{ old('descripcion', $role->descripcion) }}</textarea>
         </div>
         <div>
+            <label><input type="checkbox" name="estado" value="1" {{ old('estado', $role->estado) ? 'checked' : '' }}> Activo</label>
+        </div>
+        <div>
             <button type="submit">Guardar</button>
             <a href="{{ route('roles.index') }}">Cancelar</a>
         </div>

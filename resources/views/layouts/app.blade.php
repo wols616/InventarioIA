@@ -25,7 +25,13 @@
             <a href="{{ route('departamentos.index') }}">Departamentos</a>
             <a href="{{ route('proveedores.index') }}">Proveedores</a>
             <a href="{{ route('personas.index') }}">Personas</a>
+            <a href="{{ route('asignaciones.index') }}">Asignaciones</a>
             <a href="{{ route('roles.index') }}">Roles</a>
+            <a href="{{ route('compras.index') }}">Compras</a>
+            <a href="{{ route('movimientos.index') }}">Movimientos</a>
+            <a href="{{ route('mantenimientos.index') }}">Mantenimientos</a>
+            <a href="{{ route('auditorias.index') }}">Auditorías</a>
+            <a href="{{ route('inventario.index') }}">Inventario</a>
         </nav>
     </header>
 

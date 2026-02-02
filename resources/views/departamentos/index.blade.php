@@ -18,6 +18,7 @@
                 <th>ID</th>
                 <th>Nombre</th>
                 <th>Descripción</th>
+                <th>Estado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -27,6 +28,7 @@
                     <td>{{ $d->id_departamento }}</td>
                     <td>{{ $d->nombre }}</td>
                     <td>{{ $d->descripcion }}</td>
+                    <td>{{ $d->estado ? 'Activo' : 'Inactivo' }}</td>
                     <td>
                         <a href="{{ route('departamentos.show', $d) }}">Ver</a>
                         <a href="{{ route('departamentos.edit', $d) }}">Editar</a>

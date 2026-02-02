@@ -5,6 +5,7 @@
 
     <p><strong>ID:</strong> {{ $departamento->id_departamento }}</p>
     <p><strong>Descripción:</strong> {{ $departamento->descripcion }}</p>
+    <p><strong>Estado:</strong> {{ $departamento->estado ? 'Activo' : 'Inactivo' }}</p>
 
     <p>
         <a href="{{ route('departamentos.index') }}">Volver</a>

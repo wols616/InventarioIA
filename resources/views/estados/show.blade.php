@@ -5,6 +5,7 @@
 
     <ul>
         <li>Nombre: {{ $estado->nombre }}</li>
+        <li>Anotación: {{ $estado->anotacion ?? '-' }}</li>
         <li>Operativo: {{ $estado->es_operativo ? 'Sí' : 'No' }}</li>
     </ul>
 

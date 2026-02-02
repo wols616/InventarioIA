@@ -22,4 +22,14 @@ class MovimientoActivo extends Model
     {
         return $this->belongsTo(Activo::class, 'id_activo', 'id_activo');
     }
+
+    public function ubicacionOrigen()
+    {
+        return $this->belongsTo(UbicacionFisica::class, 'id_ubicacion_origen', 'id_ubicacion');
+    }
+
+    public function ubicacionDestino()
+    {
+        return $this->belongsTo(UbicacionFisica::class, 'id_ubicacion_destino', 'id_ubicacion');
+    }
 }

@@ -15,6 +15,7 @@
                 <th>ID</th>
                 <th>Nombre</th>
                 <th>Descripción</th>
+                <th>Estado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -24,6 +25,7 @@
                     <td>{{ $r->id_rol }}</td>
                     <td>{{ $r->nombre }}</td>
                     <td>{{ $r->descripcion }}</td>
+                    <td>{{ $r->estado ? 'Activo' : 'Inactivo' }}</td>
                     <td>
                         <a href="{{ route('roles.show', $r) }}">Ver</a>
                         <a href="{{ route('roles.edit', $r) }}">Editar</a>

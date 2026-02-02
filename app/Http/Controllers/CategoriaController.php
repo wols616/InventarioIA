@@ -23,7 +23,12 @@ class CategoriaController extends Controller
         $data = $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
+            'vida_util_estimada_meses' => 'nullable|integer|min:0',
         ]);
+
+        $data['vida_util_estimada_meses'] = $request->input('vida_util_estimada_meses');
+        $data['depreciable'] = $request->has('depreciable') ? true : false;
+        $data['activo'] = $request->has('activo') ? true : false;
 
         Categoria::create($data);
         return redirect()->route('categorias.index')->with('success', 'Categoria creada.');
@@ -44,7 +49,12 @@ class CategoriaController extends Controller
         $data = $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
+            'vida_util_estimada_meses' => 'nullable|integer|min:0',
         ]);
+
+        $data['vida_util_estimada_meses'] = $request->input('vida_util_estimada_meses');
+        $data['depreciable'] = $request->has('depreciable') ? true : false;
+        $data['activo'] = $request->has('activo') ? true : false;
 
         $categoria->update($data);
         return redirect()->route('categorias.index')->with('success', 'Categoria actualizada.');
