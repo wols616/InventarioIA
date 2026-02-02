@@ -206,10 +206,187 @@
         @yield('content')
     </main>
 
+    <!-- Chat Widget -->
+    <div id="chat-container" class="fixed bottom-6 right-6 z-50">
+        <!-- Chat Button -->
+        <div id="chat-button" class="bg-brand-600 hover:bg-brand-700 text-white rounded-full shadow-lg cursor-pointer transition-all duration-200 w-14 h-14 flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+        </div>
+
+        <!-- Chat Window -->
+        <div id="chat-window" class="hidden absolute bottom-16 right-0 w-80 h-[500px] bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col">
+            <!-- Chat Header -->
+            <div class="bg-brand-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-brand-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                        </svg>
+                    </div>
+                    <span class="font-semibold">Asistente Virtual</span>
+                </div>
+                <button id="close-chat" class="hover:bg-brand-700 rounded p-1 transition duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3">
+                <!-- Bot Message -->
+                <div class="flex items-start space-x-2">
+                    <div class="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4 text-brand-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                        </svg>
+                    </div>
+                    <div class="bg-gray-100 rounded-lg p-3 max-w-xs">
+                        <p class="text-sm text-gray-800">¡Hola! Soy tu asistente virtual del sistema de inventario. ¿En qué puedo ayudarte?</p>
+                        <span class="text-xs text-gray-500 mt-1 block">10:30 AM</span>
+                    </div>
+                </div>
+
+                <!-- User Message -->
+                <div class="flex items-start space-x-2 justify-end">
+                    <div class="bg-brand-600 text-white rounded-lg p-3 max-w-xs">
+                        <p class="text-sm">¿Cómo puedo ver todos los activos disponibles?</p>
+                        <span class="text-xs text-brand-100 mt-1 block">10:31 AM</span>
+                    </div>
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Bot Response -->
+                <div class="flex items-start space-x-2">
+                    <div class="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4 text-brand-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                        </svg>
+                    </div>
+                    <div class="bg-gray-100 rounded-lg p-3 max-w-xs">
+                        <p class="text-sm text-gray-800">Puedes acceder a la lista completa de activos desde el menú "Inventario" → "Activos", o desde el botón de acceso rápido en la página principal.</p>
+                        <span class="text-xs text-gray-500 mt-1 block">10:31 AM</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <form id="chat-form" class="border-t border-gray-200 p-4">
+                <div class="flex space-x-2">
+                    <input 
+                        type="text" 
+                        id="chat-input" 
+                        placeholder="Escribe tu mensaje..." 
+                        class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm"
+                    >
+                    <button 
+                        type="submit" 
+                        class="bg-brand-600 hover:bg-brand-700 text-white rounded-lg px-4 py-2 transition duration-200 flex items-center justify-center"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Mobile menu toggle
         document.querySelector('.mobile-menu-button').addEventListener('click', function() {
             document.querySelector('.mobile-menu').classList.toggle('hidden');
+        });
+
+        // Chat functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatButton = document.getElementById('chat-button');
+            const chatWindow = document.getElementById('chat-window');
+            const closeChat = document.getElementById('close-chat');
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatMessages = document.getElementById('chat-messages');
+
+            // Toggle chat window
+            chatButton.addEventListener('click', function() {
+                chatWindow.classList.toggle('hidden');
+                if (!chatWindow.classList.contains('hidden')) {
+                    chatInput.focus();
+                }
+            });
+
+            // Close chat window
+            closeChat.addEventListener('click', function() {
+                chatWindow.classList.add('hidden');
+            });
+
+            // Handle form submission
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const message = chatInput.value.trim();
+                
+                if (message === '') return;
+
+                // Add user message
+                addMessage(message, 'user');
+                chatInput.value = '';
+
+                // Simulate API call and response
+                setTimeout(() => {
+                    // TODO: Replace with actual API call
+                    // Example API endpoint: '/api/chat'
+                    // Example payload: { message: message, session_id: 'user_session' }
+                    
+                    // For now, simulate a response
+                    const botResponse = 'Gracias por tu mensaje. Esta es una respuesta de prueba mientras se configura la API del chatbot.';
+                    addMessage(botResponse, 'bot');
+                }, 1000);
+            });
+
+            // Function to add messages to chat
+            function addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                if (sender === 'user') {
+                    messageDiv.innerHTML = `
+                        <div class="flex items-start space-x-2 justify-end">
+                            <div class="bg-brand-600 text-white rounded-lg p-3 max-w-xs">
+                                <p class="text-sm">${text}</p>
+                                <span class="text-xs text-brand-100 mt-1 block">${timestamp}</span>
+                            </div>
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="flex items-start space-x-2">
+                            <div class="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-brand-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                                </svg>
+                            </div>
+                            <div class="bg-gray-100 rounded-lg p-3 max-w-xs">
+                                <p class="text-sm text-gray-800">${text}</p>
+                                <span class="text-xs text-gray-500 mt-1 block">${timestamp}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
         });
     </script>
 </body>

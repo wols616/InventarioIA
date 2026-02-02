@@ -16,7 +16,7 @@ use App\Http\Controllers\AreaController;
 use App\Http\Controllers\DocumentoAdjuntoController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');
 });
 
 Route::resource('activos', ActivoController::class);
