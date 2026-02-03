@@ -26,6 +26,7 @@ use App\Http\Controllers\AuditoriaInventarioController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\AsignacionActivoController;
 use App\Http\Controllers\CompraController;
+use App\Http\Controllers\ChatController;
 
 // Authentication routes
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -56,6 +57,11 @@ Route::pattern('role', '[0-9]+');
 // Protected routes - require usuario login
 Route::middleware(AuthenticateUsuario::class)->group(function () {
     Route::get('/', function () { return view('home'); });
+
+    // Chat con IA
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::post('/chat/test-bot', [ChatController::class, 'testBot'])->name('chat.testBot');
 
     // Public to authenticated users: read-only routes (index/show)
     Route::resource('activos', ActivoController::class)->only(['index','show']);

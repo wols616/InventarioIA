@@ -344,3 +344,349 @@ CREATE TABLE usuarios (
         REFERENCES personas(id_persona)
         ON DELETE CASCADE
 );
+
+-- =================================================================
+-- VISTA PARA EL ASISTENTE IA DE N8N
+-- Esta vista une TODAS las 23 tablas en una sola consulta
+-- Para que el bot pueda responder preguntas consultando aquí
+-- =================================================================
+
+-- Primero eliminar la vista si existe (necesario cuando se cambian nombres de columnas)
+DROP VIEW IF EXISTS vista_asistente_inventario;
+
+CREATE VIEW vista_asistente_inventario AS
+SELECT 
+    -- ============================================
+    -- IDENTIFICADORES PRINCIPALES
+    -- ============================================
+    a.id_activo,
+    a.codigo as codigo_activo,
+    a.codigo_barra,
+    a.numero_serie,
+    
+    -- ============================================
+    -- NOMBRE COMPLETO DEL ACTIVO (columna clave)
+    -- ============================================
+    CONCAT(
+        COALESCE(a.marca, ''), ' ',
+        COALESCE(a.modelo, ''), ' ',
+        COALESCE(ta.nombre, ''),
+        CASE 
+            WHEN a.numero_serie IS NOT NULL THEN CONCAT(' (Serie: ', a.numero_serie, ')')
+            ELSE ''
+        END
+    ) as nombre_completo_activo,
+    
+    -- ============================================
+    -- CLASIFICACIÓN DEL ACTIVO
+    -- ============================================
+    a.marca,
+    a.modelo,
+    ta.nombre as tipo_activo,
+    ta.descripcion as tipo_descripcion,
+    ca.nombre as categoria_activo,
+    ca.descripcion as categoria_descripcion,
+    ca.vida_util_estimada_meses,
+    ca.depreciable,
+    
+    -- ============================================
+    -- SITUACIÓN ACTUAL (columna clave)
+    -- Estados: OCUPADO | DISPONIBLE EN STOCK | NO DISPONIBLE
+    -- ============================================
+    CASE 
+        WHEN ea.es_operativo = false THEN 'NO DISPONIBLE'
+        WHEN EXISTS (
+            SELECT 1 FROM asignaciones_activos aa 
+            WHERE aa.id_activo = a.id_activo 
+            AND aa.estado = true 
+            AND (aa.fecha_fin IS NULL OR aa.fecha_fin > CURRENT_DATE)
+        ) THEN 'OCUPADO'
+        ELSE 'DISPONIBLE EN STOCK'
+    END as situacion_actual,
+    
+    ea.nombre as estado_activo,
+    ea.es_operativo,
+    ea.anotacion as estado_anotacion,
+    
+    -- ============================================
+    -- RESPONSABLE ACTUAL (columna clave)
+    -- ============================================
+    CASE 
+        WHEN asg.id_persona IS NOT NULL 
+        THEN CONCAT(p.nombre, ' ', p.apellido)
+        ELSE 'Sin asignar'
+    END as responsable_nombre,
+    
+    p.correo as responsable_correo,
+    p.dui as responsable_dui,
+    r.nombre as responsable_rol,
+    r.descripcion as responsable_rol_descripcion,
+    dep.nombre as responsable_departamento,
+    dep.descripcion as responsable_departamento_descripcion,
+    
+    asg.fecha_asignacion,
+    asg.fecha_fin as fecha_fin_asignacion,
+    asg.es_responsable_principal,
+    
+    -- ============================================
+    -- UBICACIÓN COMPLETA (columna clave)
+    -- ============================================
+    CASE 
+        WHEN uf.nombre IS NOT NULL THEN
+            CONCAT(
+                COALESCE(uf.nombre, 'Sin nombre'), 
+                ' (', 
+                COALESCE(ed.nombre, 'Sin edificio'), ', ', 
+                'Piso ', COALESCE(pi.numero_piso::text, '?'), ', ',
+                COALESCE(ar.nombre, 'Sin área'), ')'
+            )
+        ELSE 'Sin ubicación asignada'
+    END as ubicacion_completa,
+    
+    -- Detalles de ubicación separados
+    ed.nombre as edificio,
+    ed.codigo as codigo_edificio,
+    pi.numero_piso as piso,
+    ar.nombre as area,
+    ar.tipo_area,
+    uf.nombre as ubicacion_especifica,
+    uf.codigo_interno as codigo_ubicacion,
+    uf.descripcion_detallada as descripcion_ubicacion,
+    
+    -- ============================================
+    -- ÚLTIMO MANTENIMIENTO (columna clave)
+    -- ============================================
+    (
+        SELECT MAX(m.fecha_fin)
+        FROM mantenimientos m
+        WHERE m.id_activo = a.id_activo
+        AND m.fecha_fin IS NOT NULL
+    ) as ultima_fecha_mantenimiento,
+    
+    (
+        SELECT m.tipo_mantenimiento
+        FROM mantenimientos m
+        WHERE m.id_activo = a.id_activo
+        AND m.fecha_fin IS NOT NULL
+        ORDER BY m.fecha_fin DESC
+        LIMIT 1
+    ) as tipo_ultimo_mantenimiento,
+    
+    (
+        SELECT m.costo
+        FROM mantenimientos m
+        WHERE m.id_activo = a.id_activo
+        AND m.fecha_fin IS NOT NULL
+        ORDER BY m.fecha_fin DESC
+        LIMIT 1
+    ) as costo_ultimo_mantenimiento,
+    
+    (
+        SELECT m.anotacion
+        FROM mantenimientos m
+        WHERE m.id_activo = a.id_activo
+        AND m.fecha_fin IS NOT NULL
+        ORDER BY m.fecha_fin DESC
+        LIMIT 1
+    ) as notas_ultimo_mantenimiento,
+    
+    -- ============================================
+    -- INFORMACIÓN FINANCIERA
+    -- ============================================
+    a.valor_adquisicion,
+    a.fecha_adquisicion,
+    
+    -- ============================================
+    -- INVENTARIO
+    -- ============================================
+    inv.cantidad as cantidad_inventario,
+    inv.descripcion as descripcion_inventario,
+    inv.cantidad_minima,
+    inv.cantidad_maxima,
+    
+    -- ============================================
+    -- ÚLTIMA COMPRA
+    -- ============================================
+    (
+        SELECT c.fecha_compra
+        FROM detalle_compra dc
+        INNER JOIN compras c ON dc.id_compra = c.id_compra
+        WHERE dc.id_activo = a.id_activo
+        ORDER BY c.fecha_compra DESC
+        LIMIT 1
+    ) as ultima_fecha_compra,
+    
+    (
+        SELECT prov.nombre
+        FROM detalle_compra dc
+        INNER JOIN compras c ON dc.id_compra = c.id_compra
+        INNER JOIN proveedores prov ON c.id_proveedor = prov.id_proveedor
+        WHERE dc.id_activo = a.id_activo
+        ORDER BY c.fecha_compra DESC
+        LIMIT 1
+    ) as ultimo_proveedor,
+    
+    (
+        SELECT c.numero_factura
+        FROM detalle_compra dc
+        INNER JOIN compras c ON dc.id_compra = c.id_compra
+        WHERE dc.id_activo = a.id_activo
+        ORDER BY c.fecha_compra DESC
+        LIMIT 1
+    ) as ultima_factura,
+    
+    -- ============================================
+    -- ÚLTIMO MOVIMIENTO
+    -- ============================================
+    (
+        SELECT mov.fecha_movimiento
+        FROM movimientos_activos mov
+        WHERE mov.id_activo = a.id_activo
+        ORDER BY mov.fecha_movimiento DESC
+        LIMIT 1
+    ) as ultimo_movimiento_fecha,
+    
+    (
+        SELECT mov.motivo
+        FROM movimientos_activos mov
+        WHERE mov.id_activo = a.id_activo
+        ORDER BY mov.fecha_movimiento DESC
+        LIMIT 1
+    ) as ultimo_movimiento_motivo,
+    
+    -- ============================================
+    -- HISTORIAL DE ESTADOS
+    -- ============================================
+    (
+        SELECT he.fecha_cambio
+        FROM historial_estados he
+        WHERE he.id_activo = a.id_activo
+        ORDER BY he.fecha_cambio DESC
+        LIMIT 1
+    ) as ultimo_cambio_estado_fecha,
+    
+    (
+        SELECT ea_ant.nombre
+        FROM historial_estados he
+        LEFT JOIN estados_activos ea_ant ON he.id_estado_anterior = ea_ant.id_estado
+        WHERE he.id_activo = a.id_activo
+        ORDER BY he.fecha_cambio DESC
+        LIMIT 1
+    ) as estado_anterior,
+    
+    -- ============================================
+    -- DOCUMENTOS ADJUNTOS (cuenta)
+    -- ============================================
+    (
+        SELECT COUNT(*)
+        FROM documentos_adjuntos doc
+        WHERE doc.id_activo = a.id_activo
+    ) as total_documentos,
+    
+    -- ============================================
+    -- AUDITORÍAS (última)
+    -- ============================================
+    (
+        SELECT aud.fecha_auditoria
+        FROM detalle_auditoria da
+        INNER JOIN auditorias_inventario aud ON da.id_auditoria = aud.id_auditoria
+        WHERE da.id_activo = a.id_activo
+        ORDER BY aud.fecha_auditoria DESC
+        LIMIT 1
+    ) as ultima_auditoria_fecha,
+    
+    (
+        SELECT da.coincide_con_sistema
+        FROM detalle_auditoria da
+        INNER JOIN auditorias_inventario aud ON da.id_auditoria = aud.id_auditoria
+        WHERE da.id_activo = a.id_activo
+        ORDER BY aud.fecha_auditoria DESC
+        LIMIT 1
+    ) as ultima_auditoria_coincide,
+    
+    (
+        SELECT da.anotaciones
+        FROM detalle_auditoria da
+        INNER JOIN auditorias_inventario aud ON da.id_auditoria = aud.id_auditoria
+        WHERE da.id_activo = a.id_activo
+        ORDER BY aud.fecha_auditoria DESC
+        LIMIT 1
+    ) as ultima_auditoria_notas,
+    
+    -- ============================================
+    -- TIMESTAMP DE CONSULTA
+    -- ============================================
+    CURRENT_TIMESTAMP as fecha_consulta
+
+FROM activos a
+
+-- JOINS principales (tipo, categoría, estado)
+INNER JOIN tipos_activos ta ON a.id_tipo = ta.id_tipo
+INNER JOIN categorias_activos ca ON ta.id_categoria = ca.id_categoria
+INNER JOIN estados_activos ea ON a.id_estado = ea.id_estado
+
+-- Ubicación física (puede no tener)
+LEFT JOIN ubicaciones_fisicas uf ON a.id_ubicacion_actual = uf.id_ubicacion
+LEFT JOIN areas ar ON uf.id_area = ar.id_area
+LEFT JOIN pisos pi ON ar.id_piso = pi.id_piso
+LEFT JOIN edificios ed ON pi.id_edificio = ed.id_edificio
+
+-- Asignación actual (puede no estar asignado)
+LEFT JOIN asignaciones_activos asg ON a.id_activo = asg.id_activo 
+    AND asg.estado = true 
+    AND (asg.fecha_fin IS NULL OR asg.fecha_fin > CURRENT_DATE)
+
+-- Persona responsable (puede no tener)
+LEFT JOIN personas p ON asg.id_persona = p.id_persona
+LEFT JOIN roles r ON p.id_rol = r.id_rol
+LEFT JOIN departamentos dep ON p.id_departamento = dep.id_departamento
+
+-- Inventario (puede no estar en inventario)
+LEFT JOIN inventario inv ON a.id_activo = inv.id_activo
+
+-- Solo activos activos
+WHERE ca.activo = true
+
+ORDER BY a.codigo;
+
+-- =================================================================
+-- USO EN N8N:
+-- =================================================================
+-- 
+-- Consultas de ejemplo que el bot puede usar:
+--
+-- 1. Ver todos los activos:
+--    SELECT * FROM vista_asistente_inventario
+--
+-- 2. Buscar por nombre/marca/modelo:
+--    SELECT * FROM vista_asistente_inventario
+--    WHERE nombre_completo_activo ILIKE '%MacBook%'
+--
+-- 3. Ver quién tiene un activo:
+--    SELECT responsable_nombre, responsable_rol, responsable_departamento
+--    FROM vista_asistente_inventario
+--    WHERE codigo_activo = 'ACT-001'
+--
+-- 4. Activos de una persona:
+--    SELECT nombre_completo_activo, situacion_actual, ubicacion_completa
+--    FROM vista_asistente_inventario
+--    WHERE responsable_nombre ILIKE '%Roberto%'
+--
+-- 5. Activos disponibles:
+--    SELECT nombre_completo_activo, ubicacion_completa
+--    FROM vista_asistente_inventario
+--    WHERE situacion_actual = 'DISPONIBLE EN STOCK'
+--
+-- 6. Activos en un edificio:
+--    SELECT nombre_completo_activo, responsable_nombre, piso, area
+--    FROM vista_asistente_inventario
+--    WHERE edificio = 'Edificio A'
+--
+-- 7. Activos con mantenimiento pendiente:
+--    SELECT nombre_completo_activo, responsable_nombre, 
+--           ultima_fecha_mantenimiento
+--    FROM vista_asistente_inventario
+--    WHERE ultima_fecha_mantenimiento < CURRENT_DATE - INTERVAL '6 months'
+--       OR ultima_fecha_mantenimiento IS NULL
+--
+-- =================================================================
