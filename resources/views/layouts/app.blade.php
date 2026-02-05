@@ -146,6 +146,14 @@
 
                 <!-- Auth area -->
                 <div class="hidden md:flex items-center space-x-4">
+                    <!-- Botón de Chat con IA -->
+                    <a href="{{ route('chat.index') }}" class="text-white hover:text-brand-200 px-3 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                        </svg>
+                        <span>Chat IA</span>
+                    </a>
+                    
                     @if(isset($authUser))
                         <span class="text-white text-sm">{{ $authUser->username }} ({{ $authUser->persona->rol->nombre ?? '' }})</span>
                         <form action="{{ route('logout') }}" method="POST">
@@ -171,6 +179,12 @@
         <!-- Mobile menu -->
         <div class="mobile-menu hidden md:hidden bg-brand-900">
             <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{{ route('chat.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                    </svg>
+                    <span>Chat IA</span>
+                </a>
                 <a href="{{ route('activos.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Activos</a>
                 <a href="{{ route('inventario.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Inventario</a>
                 <a href="{{ route('movimientos.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Movimientos</a>
