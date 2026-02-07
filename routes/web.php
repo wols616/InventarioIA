@@ -62,6 +62,12 @@ Route::middleware(AuthenticateUsuario::class)->group(function () {
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
     Route::post('/chat/test-bot', [ChatController::class, 'testBot'])->name('chat.testBot');
+    
+    // Gestión de sesiones de chat
+    Route::post('/chat/sessions/create', [ChatController::class, 'createSession'])->name('chat.sessions.create');
+    Route::get('/chat/sessions', [ChatController::class, 'getSessions'])->name('chat.sessions.index');
+    Route::get('/chat/sessions/{sessionId}/history', [ChatController::class, 'getSessionHistory'])->name('chat.sessions.history');
+    Route::delete('/chat/sessions/{sessionId}', [ChatController::class, 'deleteSession'])->name('chat.sessions.delete');
 
     // Public to authenticated users: read-only routes (index/show)
     Route::resource('activos', ActivoController::class)->only(['index','show']);

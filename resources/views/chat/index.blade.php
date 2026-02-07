@@ -17,7 +17,17 @@
                         <p class="text-brand-100 text-sm">Pregúntame sobre el inventario</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-4">
+                    <button 
+                        id="new-chat-btn"
+                        class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition duration-200 flex items-center space-x-2 text-sm font-medium backdrop-blur-sm"
+                        title="Iniciar nuevo chat"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span>Nuevo Chat</span>
+                    </button>
                     <div id="connection-status" class="flex items-center space-x-2">
                         <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
                         <span class="text-white text-sm">Desconectado</span>
@@ -349,10 +359,14 @@ document.addEventListener('DOMContentLoaded', function() {
     function getSessionId() {
         let sessionId = localStorage.getItem('chat_session_id');
         if (!sessionId) {
-            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            sessionId = generateNewSessionId();
             localStorage.setItem('chat_session_id', sessionId);
         }
         return sessionId;
+    }
+
+    function generateNewSessionId() {
+        return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
 
     webhookUrlInput.addEventListener('change', function() {
@@ -597,6 +611,27 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const message = messageInput.value.trim();
         if (message) sendMessage(message);
+    });
+
+    // Botón de nuevo chat - limpiar conversación y reiniciar
+    document.getElementById('new-chat-btn').addEventListener('click', function() {
+        if (confirm('¿Deseas iniciar un nuevo chat? Se limpiará la conversación actual.')) {
+            // Limpiar mensajes
+            chatMessages.innerHTML = '';
+            
+            // Generar nuevo sessionId y guardarlo
+            const newSessionId = generateNewSessionId();
+            localStorage.setItem('chat_session_id', newSessionId);
+            
+            // Mostrar mensaje de bienvenida
+            mostrarOpciones('inicio');
+            
+            // Limpiar input
+            messageInput.value = '';
+            messageInput.focus();
+            
+            console.log('🆕 Nuevo chat iniciado con sessionId:', newSessionId);
+        }
     });
 
     messageInput.focus();
