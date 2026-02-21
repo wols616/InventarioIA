@@ -8,10 +8,36 @@ use App\Models\Activo;
 
 class MantenimientoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $mantenimientos = Mantenimiento::with('activo')->orderBy('fecha_inicio', 'desc')->paginate(15);
-        return view('mantenimientos.index', compact('mantenimientos'));
+        $query = Mantenimiento::with('activo');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('activo', function($aq) use ($search) {
+                    $aq->where('codigo', 'ilike', "%{$search}%")
+                       ->orWhere('marca', 'ilike', "%{$search}%")
+                       ->orWhere('modelo', 'ilike', "%{$search}%");
+                })->orWhere('anotacion', 'ilike', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('tipo')) {
+            $query->where('tipo_mantenimiento', $request->tipo);
+        }
+
+        if ($request->filled('fecha_desde')) {
+            $query->where('fecha_inicio', '>=', $request->fecha_desde);
+        }
+
+        if ($request->filled('fecha_hasta')) {
+            $query->where('fecha_inicio', '<=', $request->fecha_hasta);
+        }
+
+        $mantenimientos = $query->orderBy('fecha_inicio', 'desc')->paginate(15)->withQueryString();
+        $filters = $request->only(['search', 'tipo', 'fecha_desde', 'fecha_hasta']);
+        return view('mantenimientos.index', compact('mantenimientos', 'filters'));
     }
 
     public function create()

@@ -10,10 +10,29 @@ use App\Models\Activo;
 
 class AuditoriaInventarioController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $auditorias = AuditoriaInventario::with('persona')->orderBy('fecha_auditoria','desc')->paginate(15);
-        return view('auditorias.index', compact('auditorias'));
+        $query = AuditoriaInventario::with('persona');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('persona', function($q) use ($search) {
+                $q->where('nombre', 'ilike', "%{$search}%")
+                  ->orWhere('apellido', 'ilike', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('fecha_desde')) {
+            $query->where('fecha_auditoria', '>=', $request->fecha_desde);
+        }
+
+        if ($request->filled('fecha_hasta')) {
+            $query->where('fecha_auditoria', '<=', $request->fecha_hasta);
+        }
+
+        $auditorias = $query->orderBy('fecha_auditoria', 'desc')->paginate(15)->withQueryString();
+        $filters = $request->only(['search', 'fecha_desde', 'fecha_hasta']);
+        return view('auditorias.index', compact('auditorias', 'filters'));
     }
 
     public function create()

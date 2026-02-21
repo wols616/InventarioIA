@@ -10,12 +10,32 @@ use Illuminate\Support\Facades\Redirect;
 
 class MovimientoActivoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $movimientos = MovimientoActivo::with(['activo', 'ubicacionOrigen.area.piso.edificio', 'ubicacionDestino.area.piso.edificio'])
-            ->orderBy('fecha_movimiento', 'desc')
-            ->paginate(20);
-        return view('movimientos.index', compact('movimientos'));
+        $query = MovimientoActivo::with(['activo', 'ubicacionOrigen.area.piso.edificio', 'ubicacionDestino.area.piso.edificio']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('activo', function($aq) use ($search) {
+                    $aq->where('codigo', 'ilike', "%{$search}%")
+                       ->orWhere('marca', 'ilike', "%{$search}%")
+                       ->orWhere('modelo', 'ilike', "%{$search}%");
+                })->orWhere('motivo', 'ilike', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('fecha_desde')) {
+            $query->where('fecha_movimiento', '>=', $request->fecha_desde);
+        }
+
+        if ($request->filled('fecha_hasta')) {
+            $query->where('fecha_movimiento', '<=', $request->fecha_hasta);
+        }
+
+        $movimientos = $query->orderBy('fecha_movimiento', 'desc')->paginate(20)->withQueryString();
+        $filters = $request->only(['search', 'fecha_desde', 'fecha_hasta']);
+        return view('movimientos.index', compact('movimientos', 'filters'));
     }
 
     public function create(Request $request)

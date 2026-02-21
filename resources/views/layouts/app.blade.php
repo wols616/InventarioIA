@@ -247,186 +247,318 @@
     </main>
 
     <!-- Chat Widget -->
-    <div id="chat-container" class="fixed bottom-6 right-6 z-50">
-        <!-- Chat Button -->
-        <div id="chat-button" class="bg-brand-600 hover:bg-brand-700 text-white rounded-full shadow-lg cursor-pointer transition-all duration-200 w-14 h-14 flex items-center justify-center">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <style>
+        #widget-chat-messages::-webkit-scrollbar { width: 4px; }
+        #widget-chat-messages::-webkit-scrollbar-track { background: #f1f1f1; }
+        #widget-chat-messages::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 3px; }
+        @keyframes widget-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        .widget-typing span { animation: widget-bounce 1.4s infinite; }
+        .widget-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .widget-typing span:nth-child(3) { animation-delay: 0.4s; }
+    </style>
+
+    <div id="widget-container" class="fixed bottom-6 right-6 z-50">
+        <!-- Badge de notificación -->
+        <div id="widget-badge" class="hidden absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold z-10">1</div>
+
+        <!-- Botón flotante -->
+        <div id="widget-btn" class="bg-brand-600 hover:bg-brand-700 text-white rounded-full shadow-lg cursor-pointer transition-all duration-200 w-14 h-14 flex items-center justify-center">
+            <svg id="widget-icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+            <svg id="widget-icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </div>
 
-        <!-- Chat Window -->
-        <div id="chat-window" class="hidden absolute bottom-16 right-0 w-80 h-[500px] bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col">
-            <!-- Chat Header -->
-            <div class="bg-brand-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+        <!-- Ventana del chat -->
+        <div id="widget-window" class="hidden absolute bottom-16 right-0 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden" style="height:480px">
+
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-brand-600 to-brand-700 px-4 py-3 flex items-center justify-between flex-shrink-0">
                 <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                    <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
                         <svg class="w-4 h-4 text-brand-600" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                            <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path>
                         </svg>
                     </div>
-                    <span class="font-semibold">Asistente Virtual</span>
-                </div>
-                <button id="close-chat" class="hover:bg-brand-700 rounded p-1 transition duration-200">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Chat Messages -->
-            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3">
-                <!-- Bot Message -->
-                <div class="flex items-start space-x-2">
-                    <div class="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <svg class="w-4 h-4 text-brand-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
-                        </svg>
-                    </div>
-                    <div class="bg-gray-100 rounded-lg p-3 max-w-xs">
-                        <p class="text-sm text-gray-800">¡Hola! Soy tu asistente virtual del sistema de inventario. ¿En qué puedo ayudarte?</p>
-                        <span class="text-xs text-gray-500 mt-1 block">10:30 AM</span>
+                    <div>
+                        <p class="text-white font-semibold text-sm leading-none">Asistente IA</p>
+                        <div id="widget-status" class="flex items-center space-x-1 mt-0.5">
+                            <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                            <span class="text-brand-100 text-xs">En línea</span>
+                        </div>
                     </div>
                 </div>
-
-                <!-- User Message -->
-                <div class="flex items-start space-x-2 justify-end">
-                    <div class="bg-brand-600 text-white rounded-lg p-3 max-w-xs">
-                        <p class="text-sm">¿Cómo puedo ver todos los activos disponibles?</p>
-                        <span class="text-xs text-brand-100 mt-1 block">10:31 AM</span>
-                    </div>
-                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                <div class="flex items-center space-x-1">
+                    <button id="widget-new-chat" title="Nuevo chat" class="text-white/70 hover:text-white hover:bg-white/20 rounded p-1 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
-                    </div>
-                </div>
-
-                <!-- Bot Response -->
-                <div class="flex items-start space-x-2">
-                    <div class="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <svg class="w-4 h-4 text-brand-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                    </button>
+                    <a href="{{ route('chat.index') }}" title="Abrir chat completo" class="text-white/70 hover:text-white hover:bg-white/20 rounded p-1 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                         </svg>
-                    </div>
-                    <div class="bg-gray-100 rounded-lg p-3 max-w-xs">
-                        <p class="text-sm text-gray-800">Puedes acceder a la lista completa de activos desde el menú "Inventario" → "Activos", o desde el botón de acceso rápido en la página principal.</p>
-                        <span class="text-xs text-gray-500 mt-1 block">10:31 AM</span>
-                    </div>
+                    </a>
+                    <button id="widget-close" class="text-white/70 hover:text-white hover:bg-white/20 rounded p-1 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 </div>
             </div>
 
-            <!-- Chat Input -->
-            <form id="chat-form" class="border-t border-gray-200 p-4">
-                <div class="flex space-x-2">
-                    <input 
-                        type="text" 
-                        id="chat-input" 
-                        placeholder="Escribe tu mensaje..." 
-                        class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm"
+            <!-- Mensajes -->
+            <div id="widget-chat-messages" class="flex-1 overflow-y-auto px-3 py-3 space-y-3">
+            </div>
+
+            <!-- Input -->
+            <div class="border-t border-gray-100 px-3 py-3 bg-white flex-shrink-0">
+                <form id="widget-form" class="flex space-x-2">
+                    <input
+                        type="text"
+                        id="widget-input"
+                        placeholder="Escribe tu mensaje..."
+                        autocomplete="off"
+                        class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                     >
-                    <button 
-                        type="submit" 
-                        class="bg-brand-600 hover:bg-brand-700 text-white rounded-lg px-4 py-2 transition duration-200 flex items-center justify-center"
-                    >
+                    <button type="submit" id="widget-send" class="bg-brand-600 hover:bg-brand-700 text-white rounded-lg px-3 py-2 transition flex items-center justify-center disabled:opacity-50">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                         </svg>
                     </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
     <script>
         // Mobile menu toggle
-        document.querySelector('.mobile-menu-button').addEventListener('click', function() {
-            document.querySelector('.mobile-menu').classList.toggle('hidden');
-        });
+        const mobileBtn = document.querySelector('.mobile-menu-button');
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', function() {
+                document.querySelector('.mobile-menu').classList.toggle('hidden');
+            });
+        }
 
-        // Chat functionality
+        // =====================================================================
+        // CHAT WIDGET FUNCIONAL
+        // =====================================================================
         document.addEventListener('DOMContentLoaded', function() {
-            const chatButton = document.getElementById('chat-button');
-            const chatWindow = document.getElementById('chat-window');
-            const closeChat = document.getElementById('close-chat');
-            const chatForm = document.getElementById('chat-form');
-            const chatInput = document.getElementById('chat-input');
-            const chatMessages = document.getElementById('chat-messages');
+            const widgetBtn      = document.getElementById('widget-btn');
+            const widgetWindow   = document.getElementById('widget-window');
+            const widgetClose    = document.getElementById('widget-close');
+            const widgetNewChat  = document.getElementById('widget-new-chat');
+            const widgetForm     = document.getElementById('widget-form');
+            const widgetInput    = document.getElementById('widget-input');
+            const widgetSend     = document.getElementById('widget-send');
+            const widgetMessages = document.getElementById('widget-chat-messages');
+            const widgetBadge    = document.getElementById('widget-badge');
+            const iconOpen       = document.getElementById('widget-icon-open');
+            const iconClose      = document.getElementById('widget-icon-close');
 
-            // Toggle chat window
-            chatButton.addEventListener('click', function() {
-                chatWindow.classList.toggle('hidden');
-                if (!chatWindow.classList.contains('hidden')) {
-                    chatInput.focus();
-                }
-            });
+            let widgetOpened  = false;
+            let isFirstOpen   = true;
 
-            // Close chat window
-            closeChat.addEventListener('click', function() {
-                chatWindow.classList.add('hidden');
-            });
+            // -----------------------------------------------------------------
+            // Abrir / cerrar
+            // -----------------------------------------------------------------
+            function openWidget() {
+                widgetWindow.classList.remove('hidden');
+                widgetWindow.classList.add('flex');
+                widgetBtn.classList.add('bg-brand-700');
+                iconOpen.classList.add('hidden');
+                iconClose.classList.remove('hidden');
+                widgetBadge.classList.add('hidden');
+                widgetOpened = true;
 
-            // Handle form submission
-            chatForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const message = chatInput.value.trim();
-                
-                if (message === '') return;
-
-                // Add user message
-                addMessage(message, 'user');
-                chatInput.value = '';
-
-                // Simulate API call and response
-                setTimeout(() => {
-                    // TODO: Replace with actual API call
-                    // Example API endpoint: '/api/chat'
-                    // Example payload: { message: message, session_id: 'user_session' }
-                    
-                    // For now, simulate a response
-                    const botResponse = 'Gracias por tu mensaje. Esta es una respuesta de prueba mientras se configura la API del chatbot.';
-                    addMessage(botResponse, 'bot');
-                }, 1000);
-            });
-
-            // Function to add messages to chat
-            function addMessage(text, sender) {
-                const messageDiv = document.createElement('div');
-                const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-                if (sender === 'user') {
-                    messageDiv.innerHTML = `
-                        <div class="flex items-start space-x-2 justify-end">
-                            <div class="bg-brand-600 text-white rounded-lg p-3 max-w-xs">
-                                <p class="text-sm">${text}</p>
-                                <span class="text-xs text-brand-100 mt-1 block">${timestamp}</span>
-                            </div>
-                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    messageDiv.innerHTML = `
-                        <div class="flex items-start space-x-2">
-                            <div class="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                <svg class="w-4 h-4 text-brand-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
-                                </svg>
-                            </div>
-                            <div class="bg-gray-100 rounded-lg p-3 max-w-xs">
-                                <p class="text-sm text-gray-800">${text}</p>
-                                <span class="text-xs text-gray-500 mt-1 block">${timestamp}</span>
-                            </div>
-                        </div>
-                    `;
+                if (isFirstOpen) {
+                    isFirstOpen = false;
+                    widgetAddMessage('¡Hola! 👋 Soy el asistente de inventario.\n¿En qué puedo ayudarte hoy?', false);
                 }
 
-                chatMessages.appendChild(messageDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                setTimeout(() => widgetInput.focus(), 100);
             }
+
+            function closeWidget() {
+                widgetWindow.classList.add('hidden');
+                widgetWindow.classList.remove('flex');
+                widgetBtn.classList.remove('bg-brand-700');
+                iconOpen.classList.remove('hidden');
+                iconClose.classList.add('hidden');
+            }
+
+            widgetBtn.addEventListener('click', () => widgetOpened && !widgetWindow.classList.contains('hidden') ? closeWidget() : openWidget());
+            widgetClose.addEventListener('click', closeWidget);
+
+            widgetNewChat.addEventListener('click', function() {
+                widgetMessages.innerHTML = '';
+                isFirstOpen = false;
+                widgetAddMessage('¡Chat reiniciado! 🔄 ¿Qué deseas consultar?', false);
+            });
+
+            // -----------------------------------------------------------------
+            // Añadir mensaje
+            // -----------------------------------------------------------------
+            function widgetEscapeHtml(text) {
+                const d = document.createElement('div');
+                d.textContent = text;
+                return d.innerHTML;
+            }
+
+            function widgetFormatResponse(text) {
+                text = widgetEscapeHtml(text);
+                text = text.replace(/\b(ACT-\d+)\b/g, '<span class="px-1 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-mono">$1</span>');
+                text = text.replace(/\b(DISPONIBLE|OPERATIVO)\b/gi, '<span class="px-1 py-0.5 bg-green-100 text-green-800 rounded text-xs font-semibold">$1</span>');
+                text = text.replace(/\b(OCUPADO|NO DISPONIBLE|EN MANTENIMIENTO)\b/gi, '<span class="px-1 py-0.5 bg-red-100 text-red-800 rounded text-xs font-semibold">$1</span>');
+                text = text.replace(/\n/g, '<br>');
+                return text;
+            }
+
+            function widgetAddMessage(message, isUser) {
+                const div = document.createElement('div');
+                div.className = 'flex items-end space-x-2' + (isUser ? ' justify-end' : '');
+
+                const timestamp = new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+                const formatted = isUser ? widgetEscapeHtml(message) : widgetFormatResponse(message);
+
+                if (isUser) {
+                    div.innerHTML = `
+                        <div class="max-w-[220px]">
+                            <div class="bg-brand-600 text-white rounded-lg rounded-br-none px-3 py-2 text-sm">${formatted}</div>
+                            <p class="text-xs text-gray-400 text-right mt-0.5">${timestamp}</p>
+                        </div>
+                        <div class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center flex-shrink-0 mb-4">
+                            <svg class="w-3.5 h-3.5 text-brand-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                        </div>`;
+                } else {
+                    div.innerHTML = `
+                        <div class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center flex-shrink-0 mb-4">
+                            <svg class="w-3.5 h-3.5 text-brand-600" fill="currentColor" viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path></svg>
+                        </div>
+                        <div class="max-w-[220px]">
+                            <div class="bg-gray-100 text-gray-800 rounded-lg rounded-bl-none px-3 py-2 text-sm leading-relaxed">${formatted}</div>
+                            <p class="text-xs text-gray-400 mt-0.5">${timestamp}</p>
+                        </div>`;
+                }
+
+                widgetMessages.appendChild(div);
+                widgetMessages.scrollTop = widgetMessages.scrollHeight;
+
+                // Badge si está cerrado
+                if (!isUser && widgetWindow.classList.contains('hidden')) {
+                    widgetBadge.classList.remove('hidden');
+                }
+            }
+
+            // -----------------------------------------------------------------
+            // Typing indicator
+            // -----------------------------------------------------------------
+            function widgetShowTyping() {
+                const d = document.createElement('div');
+                d.id = 'widget-typing';
+                d.className = 'flex items-end space-x-2';
+                d.innerHTML = `
+                    <div class="w-6 h-6 bg-brand-100 rounded-full flex items-center justify-center flex-shrink-0 mb-4">
+                        <svg class="w-3.5 h-3.5 text-brand-600" fill="currentColor" viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path></svg>
+                    </div>
+                    <div class="bg-gray-100 rounded-lg rounded-bl-none px-3 py-2">
+                        <div class="widget-typing flex space-x-1">
+                            <span class="w-1.5 h-1.5 bg-gray-500 rounded-full"></span>
+                            <span class="w-1.5 h-1.5 bg-gray-500 rounded-full"></span>
+                            <span class="w-1.5 h-1.5 bg-gray-500 rounded-full"></span>
+                        </div>
+                    </div>`;
+                widgetMessages.appendChild(d);
+                widgetMessages.scrollTop = widgetMessages.scrollHeight;
+            }
+
+            function widgetRemoveTyping() {
+                const t = document.getElementById('widget-typing');
+                if (t) t.remove();
+            }
+
+            // -----------------------------------------------------------------
+            // Enviar mensaje
+            // -----------------------------------------------------------------
+            function widgetGetSessionId() {
+                let s = localStorage.getItem('chat_session_id');
+                if (!s) {
+                    s = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('chat_session_id', s);
+                }
+                return s;
+            }
+
+            async function widgetSendMessage(message) {
+                if (!message.trim()) return;
+
+                widgetAddMessage(message, true);
+                widgetInput.value = '';
+                widgetSend.disabled = true;
+                widgetInput.disabled = true;
+                widgetShowTyping();
+
+                const botMode    = localStorage.getItem('bot_mode') || 'local';
+                const webhookUrl = localStorage.getItem('webhook_url') || '';
+
+                try {
+                    let response;
+
+                    if (botMode === 'local') {
+                        response = await fetch('{{ route("chat.testBot") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ message: message })
+                        });
+                    } else {
+                        if (!webhookUrl) {
+                            widgetRemoveTyping();
+                            widgetAddMessage('No hay webhook configurado. Abre el chat completo para configurarlo.', false);
+                            return;
+                        }
+                        response = await fetch(webhookUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ mensaje: message, sessionId: widgetGetSessionId() })
+                        });
+                    }
+
+                    widgetRemoveTyping();
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const reply = botMode === 'local'
+                            ? (data.data?.response || data.response || JSON.stringify(data))
+                            : (data.reply || data.response || data.message || data.output || JSON.stringify(data));
+                        widgetAddMessage(reply, false);
+                    } else {
+                        widgetAddMessage('Error ' + response.status + '. Intenta de nuevo.', false);
+                    }
+                } catch (err) {
+                    widgetRemoveTyping();
+                    widgetAddMessage('No se pudo conectar al asistente. Verifica tu conexión.', false);
+                    console.error('Widget chat error:', err);
+                } finally {
+                    widgetSend.disabled = false;
+                    widgetInput.disabled = false;
+                    widgetInput.focus();
+                }
+            }
+
+            widgetForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const msg = widgetInput.value.trim();
+                if (msg) widgetSendMessage(msg);
+            });
         });
     </script>
 </body>

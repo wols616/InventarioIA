@@ -8,14 +8,38 @@ use App\Models\Activo;
 
 class InventarioController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $query = Inventario::with('activo');
-        if(request()->has('activo') && request('activo')){
-            $query->where('id_activo', request('activo'));
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('activo', function($aq) use ($search) {
+                    $aq->where('codigo', 'ilike', "%{$search}%")
+                       ->orWhere('marca', 'ilike', "%{$search}%")
+                       ->orWhere('modelo', 'ilike', "%{$search}%");
+                })->orWhere('descripcion', 'ilike', "%{$search}%");
+            });
         }
-        $inventarios = $query->paginate(20);
-        return view('inventario.index', compact('inventarios'));
+
+        if ($request->filled('stock')) {
+            if ($request->stock === 'bajo') {
+                $query->whereColumn('cantidad', '<', 'cantidad_minima')->whereNotNull('cantidad_minima');
+            } elseif ($request->stock === 'normal') {
+                $query->where(function($q) {
+                    $q->whereColumn('cantidad', '>=', 'cantidad_minima')->orWhereNull('cantidad_minima');
+                });
+            }
+        }
+
+        if ($request->filled('activo')) {
+            $query->where('id_activo', $request->activo);
+        }
+
+        $inventarios = $query->paginate(20)->withQueryString();
+        $filters = $request->only(['search', 'stock', 'activo']);
+        return view('inventario.index', compact('inventarios', 'filters'));
     }
 
     public function create()

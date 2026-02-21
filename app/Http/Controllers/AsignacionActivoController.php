@@ -11,10 +11,39 @@ use Illuminate\Database\QueryException;
 
 class AsignacionActivoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $asignaciones = AsignacionActivo::with(['activo', 'persona'])->orderBy('fecha_asignacion', 'desc')->paginate(20);
-        return view('asignaciones.index', compact('asignaciones'));
+        $query = AsignacionActivo::with(['activo', 'persona']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('activo', function($aq) use ($search) {
+                    $aq->where('codigo', 'ilike', "%{$search}%")
+                       ->orWhere('marca', 'ilike', "%{$search}%")
+                       ->orWhere('modelo', 'ilike', "%{$search}%");
+                })->orWhereHas('persona', function($pq) use ($search) {
+                    $pq->where('nombre', 'ilike', "%{$search}%")
+                       ->orWhere('apellido', 'ilike', "%{$search}%");
+                });
+            });
+        }
+
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado === 'activa' ? true : false);
+        }
+
+        if ($request->filled('fecha_desde')) {
+            $query->where('fecha_asignacion', '>=', $request->fecha_desde);
+        }
+
+        if ($request->filled('fecha_hasta')) {
+            $query->where('fecha_asignacion', '<=', $request->fecha_hasta);
+        }
+
+        $asignaciones = $query->orderBy('fecha_asignacion', 'desc')->paginate(20)->withQueryString();
+        $filters = $request->only(['search', 'estado', 'fecha_desde', 'fecha_hasta']);
+        return view('asignaciones.index', compact('asignaciones', 'filters'));
     }
 
     public function create()
