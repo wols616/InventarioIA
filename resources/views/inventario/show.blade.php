@@ -22,6 +22,27 @@
                     </div>
 
                     <div>
+                        <label class="text-sm font-medium text-gray-500">Ubicación actual</label>
+                        <p class="mt-1 text-sm text-gray-900">
+                            @if($inventario->activo && $inventario->activo->ubicacion)
+                                @php $ub = $inventario->activo->ubicacion; @endphp
+                                {{ $ub->nombre }}@if($ub->codigo_interno) ({{ $ub->codigo_interno }})@endif
+                                @if($ub->area)
+                                    · {{ $ub->area->nombre }}
+                                    @if($ub->area->piso)
+                                        · {{ $ub->area->piso->nombre ?? '' }}
+                                        @if($ub->area->piso->edificio)
+                                            · {{ $ub->area->piso->edificio->nombre ?? '' }}
+                                        @endif
+                                    @endif
+                                @endif
+                            @else
+                                <span class="text-gray-500">No establecida</span>
+                            @endif
+                        </p>
+                    </div>
+
+                    <div>
                         <label class="text-sm font-medium text-gray-500">Cantidad Actual</label>
                         <p class="mt-1">
                             <span class="inline-flex px-3 py-1 text-lg font-semibold rounded-full {{ $inventario->cantidad < ($inventario->cantidad_minima ?: 0) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
@@ -62,6 +83,58 @@
                                 </div>
                             </div>
                         </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+        <div class="p-6 mt-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-3">Asignaciones del activo</h2>
+                    @if(isset($asignaciones) && $asignaciones->count())
+                        <ul class="divide-y divide-gray-100">
+                            @foreach($asignaciones as $as)
+                                <li class="py-3">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">{{ $as->persona ? ($as->persona->nombre . ' ' . $as->persona->apellido) : 'Sin persona' }}</div>
+                                            <div class="text-xs text-gray-500">Asignado: {{ $as->fecha_asignacion ? $as->fecha_asignacion->format('Y-m-d') : '—' }} @if($as->fecha_fin) · Fin: {{ $as->fecha_fin->format('Y-m-d') }} @endif</div>
+                                        </div>
+                                        <div class="text-sm text-gray-600">
+                                            @if($as->estado)
+                                                <span class="px-2 py-1 rounded bg-green-100 text-green-800">Activa</span>
+                                            @else
+                                                <span class="px-2 py-1 rounded bg-gray-100 text-gray-800">Inactiva</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-sm text-gray-500">No hay asignaciones registradas para este activo.</p>
+                    @endif
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-3">Historial de movimientos</h2>
+                    @if(isset($movimientos) && $movimientos->count())
+                        <ul class="divide-y divide-gray-100">
+                            @foreach($movimientos as $mov)
+                                <li class="py-3">
+                                    <div class="text-sm text-gray-900">{{ $mov->fecha_movimiento ? $mov->fecha_movimiento : 'Fecha desconocida' }}</div>
+                                    <div class="text-xs text-gray-500">
+                                        Origen: {{ $mov->ubicacionOrigen ? ($mov->ubicacionOrigen->nombre . ' — ' . ($mov->ubicacionOrigen->area->nombre ?? '')) : 'N/A' }}<br>
+                                        Destino: {{ $mov->ubicacionDestino ? ($mov->ubicacionDestino->nombre . ' — ' . ($mov->ubicacionDestino->area->nombre ?? '')) : 'N/A' }}
+                                    </div>
+                                    @if($mov->motivo)
+                                        <div class="mt-2 text-sm text-gray-700">Motivo: {{ $mov->motivo }}</div>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-sm text-gray-500">No hay movimientos de ubicación para este activo.</p>
                     @endif
                 </div>
             </div>

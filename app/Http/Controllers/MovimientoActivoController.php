@@ -40,7 +40,7 @@ class MovimientoActivoController extends Controller
 
     public function create(Request $request)
     {
-        $activos = Activo::with('ubicacion')->get();
+        $activos = Activo::with('ubicacion')->where('id_estado', '!=', 9)->get();
         $ubicaciones = UbicacionFisica::with('area.piso.edificio')->get();
         $presetActivo = $request->query('activo');
         return view('movimientos.create', compact('activos', 'ubicaciones', 'presetActivo'));

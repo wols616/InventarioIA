@@ -32,6 +32,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="md:col-span-2">
                         <label for="id_activo" class="block text-sm font-medium text-gray-700 mb-2">Activo *</label>
+                        <input type="text" id="activo_search" placeholder="Buscar activo por código, marca o modelo..." class="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                         <select name="id_activo" id="activo_select" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                             <option value="">-- Seleccione activo --</option>
                             @foreach($activos as $a)
@@ -89,6 +90,7 @@
     <script>
         (function(){
             const activoSel = document.getElementById('activo_select');
+            const activoSearch = document.getElementById('activo_search');
             const origenSel = document.getElementById('origen_select');
             function updateOrigen(){
                 const o = activoSel.selectedOptions[0];
@@ -101,6 +103,18 @@
             }
             activoSel.addEventListener('change', updateOrigen);
             updateOrigen();
+
+            // Filtrado simple de opciones del select usando el input de búsqueda
+            if(activoSearch){
+                activoSearch.addEventListener('input', function(){
+                    const q = this.value.trim().toLowerCase();
+                    Array.from(activoSel.options).forEach(opt => {
+                        if(!opt.value){ opt.hidden = false; return; }
+                        const text = (opt.textContent || '').toLowerCase();
+                        opt.hidden = q ? !text.includes(q) : false;
+                    });
+                });
+            }
         })();
     </script>
 

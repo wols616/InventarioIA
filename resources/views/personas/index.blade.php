@@ -23,6 +23,81 @@
             </div>
         </div>
 
+        {{-- Barra de búsqueda y filtros --}}
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <form method="GET" action="{{ route('personas.index') }}" class="flex flex-wrap gap-3 items-end">
+                {{-- Búsqueda de texto --}}
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Buscar</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"/>
+                            </svg>
+                        </span>
+                        <input type="text" name="buscar" value="{{ request('buscar') }}"
+                            placeholder="Nombre, apellido, DUI o correo…"
+                            class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                {{-- Filtro estado --}}
+                <div class="min-w-[130px]">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Estado</label>
+                    <select name="estado" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                        <option value="">Todos</option>
+                        <option value="1" {{ request('estado') === '1' ? 'selected' : '' }}>Activo</option>
+                        <option value="0" {{ request('estado') === '0' ? 'selected' : '' }}>Inactivo</option>
+                    </select>
+                </div>
+
+                {{-- Filtro rol --}}
+                <div class="min-w-[150px]">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Rol</label>
+                    <select name="id_rol" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                        <option value="">Todos</option>
+                        @foreach($roles as $r)
+                            <option value="{{ $r->id_rol }}" {{ request('id_rol') == $r->id_rol ? 'selected' : '' }}>{{ $r->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Filtro departamento --}}
+                <div class="min-w-[170px]">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Departamento</label>
+                    <select name="id_departamento" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                        <option value="">Todos</option>
+                        @foreach($departamentos as $d)
+                            <option value="{{ $d->id_departamento }}" {{ request('id_departamento') == $d->id_departamento ? 'selected' : '' }}>{{ $d->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Botones --}}
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-200 flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"/>
+                        </svg>
+                        Filtrar
+                    </button>
+                    @if(request()->hasAny(['buscar','estado','id_rol','id_departamento']))
+                        <a href="{{ route('personas.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium py-2 px-4 rounded-md transition duration-200 flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Limpiar
+                        </a>
+                    @endif
+                </div>
+            </form>
+
+            {{-- Contador de resultados --}}
+            <p class="mt-2 text-xs text-gray-500">
+                {{ $personas->count() }} {{ $personas->count() === 1 ? 'persona encontrada' : 'personas encontradas' }}
+            </p>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
@@ -101,7 +176,7 @@
                                         <form action="{{ route('personas.destroy', $p) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" onclick="return confirm('¿Está seguro de eliminar esta persona?')" class="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded transition duration-200" title="Eliminar">
+                                            <button type="submit" onclick="return confirm('¿Está seguro de inactivar esta persona?')" class="text-yellow-600 hover:text-yellow-900 p-2 hover:bg-yellow-50 rounded transition duration-200" title="Inactivar">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                                 </svg>

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\AsignacionActivo;
 use App\Models\Activo;
 use App\Models\Persona;
+use App\Models\Inventario;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
@@ -52,6 +54,20 @@ class AsignacionActivoController extends Controller
         $activos = Activo::whereHas('estado', function($q){
             $q->where('es_operativo', true);
         })->orderBy('codigo')->get();
+        // Añadir disponibilidad a cada activo
+        $activos->transform(function($activo){
+            $inv = Inventario::where('id_activo', $activo->id_activo)->first();
+            $stock = $inv ? (int)$inv->cantidad : 0;
+            $assigned = AsignacionActivo::where('id_activo', $activo->id_activo)
+                ->where('estado', true)
+                ->where(function($q){
+                    $q->whereNull('fecha_fin')
+                      ->orWhere('fecha_fin', '>', Carbon::today()->toDateString());
+                })->count();
+            $activo->available = max(0, $stock - $assigned);
+            return $activo;
+        });
+
         $personas = Persona::orderBy('nombre')->get();
         return view('asignaciones.create', compact('activos', 'personas'));
     }
@@ -83,6 +99,28 @@ class AsignacionActivoController extends Controller
             return back()->withErrors(['id_activo' => 'El activo seleccionado no está disponible para asignación (estado no operativo).'])->withInput();
         }
 
+        // Verificar disponibilidad en inventario
+        try {
+            $inventario = Inventario::where('id_activo', $activo->id_activo)->first();
+        } catch (QueryException $e) {
+            Log::error('DB error fetching inventario for activo: '.$e->getMessage());
+            return back()->withErrors(['general' => 'Error al verificar el inventario del activo.'])->withInput();
+        }
+
+        $stock = $inventario ? (int)$inventario->cantidad : 0;
+
+        // Contar asignaciones activas (estado = true) que no han finalizado
+        $assignedCount = AsignacionActivo::where('id_activo', $activo->id_activo)
+            ->where('estado', true)
+            ->where(function($q){
+                $q->whereNull('fecha_fin')
+                  ->orWhere('fecha_fin', '>', Carbon::today()->toDateString());
+            })->count();
+
+        if ($assignedCount >= $stock) {
+            return back()->withErrors(['id_activo' => "No hay unidades disponibles en inventario (Disponibles: " . max(0, $stock - $assignedCount) . ")"])->withInput();
+        }
+
         $data['es_responsable_principal'] = $request->boolean('es_responsable_principal');
         $data['estado'] = $request->boolean('estado', true);
 
@@ -111,6 +149,20 @@ class AsignacionActivoController extends Controller
         $activos = Activo::whereHas('estado', function($q){
             $q->where('es_operativo', true);
         })->orderBy('codigo')->get();
+
+        $activos->transform(function($activo){
+            $inv = Inventario::where('id_activo', $activo->id_activo)->first();
+            $stock = $inv ? (int)$inv->cantidad : 0;
+            $assigned = AsignacionActivo::where('id_activo', $activo->id_activo)
+                ->where('estado', true)
+                ->where(function($q){
+                    $q->whereNull('fecha_fin')
+                      ->orWhere('fecha_fin', '>', Carbon::today()->toDateString());
+                })->count();
+            $activo->available = max(0, $stock - $assigned);
+            return $activo;
+        });
+
         $personas = Persona::orderBy('nombre')->get();
         return view('asignaciones.edit', compact('asignacion', 'activos', 'personas'));
     }
@@ -140,6 +192,31 @@ class AsignacionActivoController extends Controller
         // Permitir asignación solo si el estado indica que está operativo
         if($activo && $activo->estado && !$activo->estado->es_operativo){
             return back()->withErrors(['id_activo' => 'El activo seleccionado no está disponible para asignación (estado no operativo).'])->withInput();
+        }
+
+        // Verificar disponibilidad en inventario si la asignación quedará activa
+        $willBeActive = $request->boolean('estado', true);
+        if ($willBeActive) {
+            try {
+                $inventario = Inventario::where('id_activo', $activo->id_activo)->first();
+            } catch (QueryException $e) {
+                Log::error('DB error fetching inventario for activo update: '.$e->getMessage());
+                return back()->withErrors(['general' => 'Error al verificar el inventario del activo.'])->withInput();
+            }
+
+            $stock = $inventario ? (int)$inventario->cantidad : 0;
+
+            $assignedCount = AsignacionActivo::where('id_activo', $activo->id_activo)
+                ->where('estado', true)
+                ->where(function($q){
+                    $q->whereNull('fecha_fin')
+                      ->orWhere('fecha_fin', '>', Carbon::today()->toDateString());
+                })->where('id_asignacion', '!=', $asignacion->id_asignacion)
+                ->count();
+
+            if ($assignedCount >= $stock) {
+                return back()->withErrors(['id_activo' => "No hay unidades disponibles en inventario para este activo (Disponibles: " . max(0, $stock - $assignedCount) . ")"])->withInput();
+            }
         }
 
         $data['es_responsable_principal'] = $request->boolean('es_responsable_principal');

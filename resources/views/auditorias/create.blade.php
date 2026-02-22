@@ -64,6 +64,10 @@
                         </button>
                     </div>
 
+                    <div>
+                        <input type="text" id="aud_activo_search" placeholder="Buscar activo (aplica a todos los selects)..." class="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                    </div>
+
                     <div id="detalles" class="space-y-3">
                         <div class="detalle-row bg-gray-50 p-4 rounded-lg border border-gray-200">
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
@@ -121,8 +125,12 @@
     <script>
         (function(){
             const activesHtml = `@foreach($activos as $act)<option value="{{ $act->id_activo }}">{{ addslashes($act->codigo . ' - ' . ($act->marca ?? '') . ' ' . ($act->modelo ?? '')) }}</option>@endforeach`;
-            
-            document.getElementById('addDetalle').addEventListener('click', function(){
+
+            const addDetalleBtn = document.getElementById('addDetalle');
+            const detallesContainer = document.getElementById('detalles');
+            const audSearch = document.getElementById('aud_activo_search');
+
+            function createDetalleRow(){
                 const c = document.createElement('div');
                 c.className='detalle-row bg-gray-50 p-4 rounded-lg border border-gray-200';
                 c.innerHTML = `
@@ -153,14 +161,33 @@
                         </div>
                     </div>
                 `;
-                document.getElementById('detalles').appendChild(c);
+                return c;
+            }
+
+            addDetalleBtn.addEventListener('click', function(){
+                detallesContainer.appendChild(createDetalleRow());
             });
-            
-            document.getElementById('detalles').addEventListener('click', function(e){
+
+            detallesContainer.addEventListener('click', function(e){
                 if(e.target.closest('.remove')) {
                     e.target.closest('.detalle-row').remove();
                 }
             });
+
+            // Search across all activo selects (including dynamic ones)
+            if(audSearch){
+                audSearch.addEventListener('input', function(){
+                    const q = this.value.trim().toLowerCase();
+                    const selects = document.querySelectorAll('select[name="id_activo[]"], select[name="id_activo"]');
+                    selects.forEach(select => {
+                        Array.from(select.options).forEach(opt => {
+                            if(!opt.value){ opt.hidden = false; return; }
+                            const text = (opt.textContent || '').toLowerCase();
+                            opt.hidden = q ? !text.includes(q) : false;
+                        });
+                    });
+                });
+            }
         })();
     </script>
 @endsection

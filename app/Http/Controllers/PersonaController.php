@@ -12,9 +12,37 @@ class PersonaController extends Controller
 {
     public function index(Request $request)
     {
-        $personas = Persona::all();
+        $query = Persona::with('rol', 'departamento');
+
+        if ($request->filled('buscar')) {
+            $q = strtolower($request->buscar);
+            $query->where(function ($sub) use ($q) {
+                $sub->whereRaw('LOWER(nombre) LIKE ?', ["%{$q}%"])
+                    ->orWhereRaw('LOWER(apellido) LIKE ?', ["%{$q}%"])
+                    ->orWhereRaw('LOWER(dui) LIKE ?', ["%{$q}%"])
+                    ->orWhereRaw('LOWER(correo) LIKE ?', ["%{$q}%"]);
+            });
+        }
+
+        if ($request->filled('estado') && $request->estado !== '') {
+            $query->where('estado', $request->estado);
+        }
+
+        if ($request->filled('id_rol')) {
+            $query->where('id_rol', $request->id_rol);
+        }
+
+        if ($request->filled('id_departamento')) {
+            $query->where('id_departamento', $request->id_departamento);
+        }
+
+        $personas      = $query->get();
+        $roles         = Role::all();
+        $departamentos = Departamento::all();
+
         if ($request->wantsJson()) return $personas;
-        return view('personas.index', compact('personas'));
+
+        return view('personas.index', compact('personas', 'roles', 'departamentos'));
     }
 
     public function create()
@@ -70,8 +98,9 @@ class PersonaController extends Controller
 
     public function destroy(Persona $persona)
     {
-        $persona->delete();
-        if (request()->wantsJson()) return response('', 204);
-        return Redirect::route('personas.index')->with('success', 'Persona eliminada');
+        $persona->estado = 0;
+        $persona->save();
+        if (request()->wantsJson()) return response('', 200);
+        return Redirect::route('personas.index')->with('success', 'Persona inactivada');
     }
 }

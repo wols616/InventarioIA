@@ -117,23 +117,38 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ optional($activo->fecha_adquisicion)->format('Y-m-d') }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ number_format($activo->valor_adquisicion, 2) }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                            <a href="{{ route('activos.show', $activo) }}" class="text-brand-600 hover:text-brand-900">Ver</a>
-                            <a href="{{ route('documentos.index', ['activo' => $activo->id_activo]) }}" class="text-brand-600 hover:text-brand-900">Docs</a>
-                            <a href="{{ route('inventario.index') }}?activo={{ $activo->id_activo }}" class="text-brand-600 hover:text-brand-900">Inv</a>
-                            @if(isset($authUser) && in_array(($authUser->persona->rol->nombre ?? ''), ['Admin','Supervisor']))
-                                <a href="{{ route('activos.edit', $activo) }}" class="text-indigo-600 hover:text-indigo-900">Editar</a>
-                                @if(($authUser->persona->rol->nombre ?? '') === 'Admin')
-                                    <form action="{{ route('activos.destroy', $activo) }}" method="POST" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" onclick="return confirm('¿Eliminar?')" class="text-red-600 hover:text-red-900">Eliminar</button>
-                                    </form>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex items-center space-x-2">
+                                <a href="{{ route('activos.show', $activo) }}" title="Ver" class="text-brand-600 hover:text-brand-900 inline-flex items-center p-1">
+                                    <i class="bi bi-eye text-lg"></i>
+                                </a>
+
+                                <a href="{{ route('documentos.index', ['activo' => $activo->id_activo]) }}" title="Documentos" class="text-brand-600 hover:text-brand-900 inline-flex items-center p-1">
+                                    <i class="bi bi-file-earmark-text text-lg"></i>
+                                </a>
+
+                                <a href="{{ route('inventario.index') }}?activo={{ $activo->id_activo }}" title="Inventario" class="text-brand-600 hover:text-brand-900 inline-flex items-center p-1">
+                                    <i class="bi bi-card-list text-lg"></i>
+                                </a>
+
+                                @if(isset($authUser) && in_array(($authUser->persona->rol->nombre ?? ''), ['Admin','Supervisor']))
+                                    <a href="{{ route('activos.edit', $activo) }}" title="Editar" class="text-indigo-600 hover:text-indigo-900 inline-flex items-center p-1">
+                                        <i class="bi bi-pencil text-lg"></i>
+                                    </a>
+                                    @if(($authUser->persona->rol->nombre ?? '') === 'Admin')
+                                        <form action="{{ route('activos.destroy', $activo) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" onclick="return confirm('¿Eliminar?')" title="Eliminar" class="text-red-600 hover:text-red-900 inline-flex items-center p-1">
+                                                <i class="bi bi-trash text-lg"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                @elseif(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Auditor')
+                                    @include('partials.disabled-button', ['label' => 'Editar'])
+                                    @include('partials.disabled-button', ['label' => 'Eliminar'])
                                 @endif
-                            @elseif(isset($authUser) && ($authUser->persona->rol->nombre ?? '') === 'Auditor')
-                                @include('partials.disabled-button', ['label' => 'Editar'])
-                                @include('partials.disabled-button', ['label' => 'Eliminar'])
-                            @endif
+                            </div>
                         </td>
                     </tr>
                 @endforeach

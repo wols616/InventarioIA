@@ -68,7 +68,7 @@
 
                     <div>
                         <label for="dui" class="block text-sm font-medium text-gray-700 mb-2">DUI</label>
-                        <input type="text" name="dui" id="dui" value="{{ old('dui', $persona->dui) }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent" placeholder="12345678-9">
+                        <input type="text" name="dui" id="dui" value="{{ old('dui', $persona->dui) }}" maxlength="10" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent" placeholder="12345678-9">
                         <p class="mt-1 text-xs text-gray-500">Opcional: número de documento de identidad</p>
                     </div>
 
@@ -116,4 +116,20 @@
             </form>
         </div>
     </div>
-@endsection
+    <script>
+    document.addEventListener('DOMContentLoaded', function(){
+        const dui = document.getElementById('dui');
+        if(!dui) return;
+        dui.setAttribute('maxlength','10');
+        dui.addEventListener('input', function(){
+            let digits = this.value.replace(/\D/g, '');
+            if (digits.length > 9) digits = digits.slice(0,9);
+            if (digits.length > 8) {
+                this.value = digits.slice(0,8) + '-' + digits.slice(8);
+            } else {
+                this.value = digits;
+            }
+        });
+    });
+    </script>
+    @endsection

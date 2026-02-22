@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Inventario;
 use App\Models\Activo;
+use App\Models\AsignacionActivo;
+use App\Models\MovimientoActivo;
 
 class InventarioController extends Controller
 {
@@ -64,7 +66,22 @@ class InventarioController extends Controller
 
     public function show(Inventario $inventario)
     {
-        return view('inventario.show', compact('inventario'));
+        // Eager load related activo details
+        $inventario->load('activo.tipo', 'activo.estado', 'activo.ubicacion.area.piso.edificio');
+
+        // Todas las asignaciones para este activo
+        $asignaciones = AsignacionActivo::with('persona')
+            ->where('id_activo', $inventario->id_activo)
+            ->orderBy('fecha_asignacion', 'desc')
+            ->get();
+
+        // Movimientos de ubicación para este activo
+        $movimientos = MovimientoActivo::with(['ubicacionOrigen.area.piso.edificio', 'ubicacionDestino.area.piso.edificio'])
+            ->where('id_activo', $inventario->id_activo)
+            ->orderBy('fecha_movimiento', 'desc')
+            ->get();
+
+        return view('inventario.show', compact('inventario', 'asignaciones', 'movimientos'));
     }
 
     public function edit(Inventario $inventario)
