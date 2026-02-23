@@ -52,11 +52,27 @@
                     </div>
 
                     <div>
-                        <label for="id_ubicacion_actual" class="block text-sm font-medium text-gray-700 mb-2">Ubicación</label>
+                        <label for="id_edificio_select" class="block text-sm font-medium text-gray-700 mb-2">Edificio</label>
+                        <select id="id_edificio_select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                            <option value="">-- Todos los Edificios --</option>
+                            @foreach($edificios as $ed)
+                                <option value="{{ $ed->id_edificio }}">{{ $ed->nombre }}</option>
+                            @endforeach
+                        </select>
+
+                        <label for="id_area_select" class="block text-sm font-medium text-gray-700 mb-2 mt-4">Área</label>
+                        <select id="id_area_select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                            <option value="">-- Todas las Áreas --</option>
+                            @foreach($areas as $area)
+                                <option value="{{ $area->id_area }}" data-edificio="{{ $area->piso ? $area->piso->id_edificio : '' }}">{{ $area->nombre }}</option>
+                            @endforeach
+                        </select>
+
+                        <label for="id_ubicacion_actual" class="block text-sm font-medium text-gray-700 mb-2 mt-4">Ubicación</label>
                         <select name="id_ubicacion_actual" id="id_ubicacion_actual" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                             <option value="">-- Sin ubicación --</option>
                             @foreach($ubicaciones as $ubicacion)
-                                <option value="{{ $ubicacion->id_ubicacion }}" {{ (old('id_ubicacion_actual', $activo->id_ubicacion_actual) == $ubicacion->id_ubicacion) ? 'selected' : '' }}>
+                                <option value="{{ $ubicacion->id_ubicacion }}" data-area="{{ $ubicacion->id_area }}" {{ (old('id_ubicacion_actual', $activo->id_ubicacion_actual) == $ubicacion->id_ubicacion) ? 'selected' : '' }}>
                                     {{ $ubicacion->nombre }}@if($ubicacion->area) ({{ $ubicacion->area->nombre }})@endif
                                 </option>
                             @endforeach
@@ -107,4 +123,73 @@
             </form>
         </div>
     </div>
-@endsection
+    <script>
+        (function(){
+            const areas = @json($areas);
+            const ubicaciones = @json($ubicaciones);
+            const edificioSelect = document.getElementById('id_edificio_select');
+            const areaSelect = document.getElementById('id_area_select');
+            const ubicSelect = document.getElementById('id_ubicacion_actual');
+
+            function populateAreas(edificioId){
+                const current = areaSelect.value;
+                areaSelect.innerHTML = '<option value="">-- Todas las Áreas --</option>';
+                areas.forEach(a => {
+                    const edificioOfArea = a.piso ? a.piso.id_edificio : null;
+                    if(!edificioId || String(edificioOfArea) === String(edificioId)){
+                        const opt = document.createElement('option');
+                        opt.value = a.id_area;
+                        opt.textContent = a.nombre;
+                        opt.dataset.edificio = edificioOfArea || '';
+                        areaSelect.appendChild(opt);
+                    }
+                });
+                if(current) areaSelect.value = current;
+            }
+
+            function populateUbicaciones(areaId){
+                const prev = ubicSelect.value;
+                ubicSelect.innerHTML = '<option value="">-- Sin ubicación --</option>';
+                ubicaciones.forEach(u => {
+                    if(!areaId || String(u.id_area) === String(areaId)){
+                        const opt = document.createElement('option');
+                        opt.value = u.id_ubicacion;
+                        opt.textContent = (u.area && u.area.nombre ? u.area.nombre + ' - ' : '') + u.nombre;
+                        opt.dataset.area = u.id_area;
+                        if(String(u.id_ubicacion) === String(prev)) opt.selected = true;
+                        ubicSelect.appendChild(opt);
+                    }
+                });
+            }
+
+            edificioSelect.addEventListener('change', function(e){
+                populateAreas(e.target.value);
+                populateUbicaciones('');
+            });
+
+            areaSelect.addEventListener('change', function(e){
+                populateUbicaciones(e.target.value);
+            });
+
+            // initialize selects based on current activo value if present
+            const oldUbic = @json(old('id_ubicacion_actual', $activo->id_ubicacion_actual));
+            if(oldUbic){
+                const selU = ubicaciones.find(u => String(u.id_ubicacion) === String(oldUbic));
+                const areaId = selU ? selU.id_area : null;
+                const areaObj = areas.find(a => String(a.id_area) === String(areaId));
+                const edificioId = areaObj && areaObj.piso ? areaObj.piso.id_edificio : null;
+                if(edificioId){
+                    edificioSelect.value = edificioId;
+                }
+                populateAreas(edificioId);
+                if(areaId) areaSelect.value = areaId;
+                populateUbicaciones(areaId);
+                if(oldUbic) ubicSelect.value = oldUbic;
+            } else {
+                populateAreas('');
+                populateUbicaciones('');
+            }
+        })();
+    </script>
+
+    @endsection

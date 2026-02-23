@@ -6,6 +6,9 @@ use App\Models\Activo;
 use App\Models\HistorialEstado;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Models\Edificio;
+use App\Models\Area;
+use App\Models\UbicacionFisica;
 
 class ActivoController extends Controller
 {
@@ -33,6 +36,14 @@ class ActivoController extends Controller
             $query->where('id_ubicacion_actual', request('id_ubicacion_actual'));
         }
 
+        // filter by edificio (through ubicacion -> area -> piso)
+        if(request()->filled('id_edificio')){
+            $edificioId = request('id_edificio');
+            $query->whereHas('ubicacion.area.piso', function($q) use ($edificioId){
+                $q->where('id_edificio', $edificioId);
+            });
+        }
+
         // by default exclude estado 9 (Eliminado) unless include_deleted param set
         if(!request()->boolean('include_deleted')){
             $query->where('id_estado', '!=', 9);
@@ -43,9 +54,10 @@ class ActivoController extends Controller
         // provide lists for filter selects
         $tipos = \App\Models\TipoActivo::orderBy('nombre')->get();
         $estados = \App\Models\EstadoActivo::orderBy('nombre')->get();
-        $ubicaciones = \App\Models\UbicacionFisica::orderBy('nombre')->get();
+        $ubicaciones = \App\Models\UbicacionFisica::with('area.piso')->orderBy('nombre')->get();
+        $edificios = Edificio::orderBy('nombre')->get();
 
-        return view('activos.index', compact('activos','tipos','estados','ubicaciones'));
+        return view('activos.index', compact('activos','tipos','estados','ubicaciones','edificios'));
     }
 
     public function create()
@@ -53,7 +65,9 @@ class ActivoController extends Controller
         $tipos = \App\Models\TipoActivo::all();
         $estados = \App\Models\EstadoActivo::all();
         $ubicaciones = \App\Models\UbicacionFisica::with('area')->get();
-        return view('activos.create', compact('tipos', 'estados', 'ubicaciones'));
+        $edificios = Edificio::orderBy('nombre')->get();
+        $areas = Area::with('piso')->orderBy('nombre')->get();
+        return view('activos.create', compact('tipos', 'estados', 'ubicaciones', 'edificios', 'areas'));
     }
 
     public function store(Request $request)
@@ -85,7 +99,9 @@ class ActivoController extends Controller
         $tipos = \App\Models\TipoActivo::all();
         $estados = \App\Models\EstadoActivo::all();
         $ubicaciones = \App\Models\UbicacionFisica::with('area')->get();
-        return view('activos.edit', compact('activo', 'tipos', 'estados', 'ubicaciones'));
+        $edificios = Edificio::orderBy('nombre')->get();
+        $areas = Area::with('piso')->orderBy('nombre')->get();
+        return view('activos.edit', compact('activo', 'tipos', 'estados', 'ubicaciones', 'edificios', 'areas'));
     }
 
     public function update(Request $request, Activo $activo)

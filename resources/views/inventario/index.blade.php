@@ -72,8 +72,22 @@
                             {{ $i->activo ? ($i->activo->codigo . ' - ' . trim(($i->activo->marca ?? '') . ' ' . ($i->activo->modelo ?? ''))) : $i->id_activo }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $i->cantidad < ($i->cantidad_minima ?: 0) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
-                                {{ $i->cantidad }}
+                            @php
+                                $min = $i->cantidad_minima !== null ? $i->cantidad_minima : null;
+                                $cantidad = $i->cantidad ?: 0;
+                                $badgeClass = 'bg-green-100 text-green-800';
+                                if($min !== null && $min > 0){
+                                    if($cantidad < $min){
+                                        $badgeClass = 'bg-red-100 text-red-800';
+                                    } elseif (($cantidad - $min) <= 5){
+                                        $badgeClass = 'bg-yellow-100 text-yellow-800';
+                                    } else {
+                                        $badgeClass = 'bg-green-100 text-green-800';
+                                    }
+                                }
+                            @endphp
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $badgeClass }}">
+                                {{ $cantidad }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-900">{{ $i->descripcion ?: '-' }}</td>

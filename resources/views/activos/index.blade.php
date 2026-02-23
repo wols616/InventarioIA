@@ -48,10 +48,19 @@
                         </select>
                     </div>
                     <div>
-                        <select name="id_ubicacion_actual" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                        <select name="id_edificio" id="id_edificio_filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                            <option value="">-- Edificio --</option>
+                            @foreach($edificios as $ed)
+                                <option value="{{ $ed->id_edificio }}" {{ request('id_edificio') == $ed->id_edificio ? 'selected' : '' }}>{{ $ed->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <select name="id_ubicacion_actual" id="id_ubicacion_filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                             <option value="">-- Ubicación --</option>
                             @foreach($ubicaciones as $u)
-                                <option value="{{ $u->id_ubicacion }}" {{ request('id_ubicacion_actual') == $u->id_ubicacion ? 'selected' : '' }}>{{ $u->nombre }}</option>
+                                @php $edId = $u->area && $u->area->piso ? $u->area->piso->id_edificio : ''; @endphp
+                                <option value="{{ $u->id_ubicacion }}" data-edificio="{{ $edId }}" {{ request('id_ubicacion_actual') == $u->id_ubicacion ? 'selected' : '' }}>{{ $u->nombre }}@if($u->area) ({{ $u->area->nombre }})@endif</option>
                             @endforeach
                         </select>
                     </div>
@@ -159,4 +168,50 @@
 
     <!-- Paginación -->
     <div class="mt-6">{{ $activos->links() }}</div>
+<script>
+    (function(){
+        const edificioSelect = document.getElementById('id_edificio_filter');
+        const ubicSelect = document.getElementById('id_ubicacion_filter');
+        if(!edificioSelect || !ubicSelect) return;
+
+        // store original options
+        const originalOptions = Array.from(ubicSelect.options).map(o => ({ value: o.value, text: o.text, ed: o.dataset.edificio }));
+
+        function filterUbicaciones(edId){
+            ubicSelect.innerHTML = '';
+            // add default
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = '-- Ubicación --';
+            ubicSelect.appendChild(defaultOpt);
+
+            originalOptions.forEach(o => {
+                if(!edId || String(o.ed) === String(edId)){
+                    const opt = document.createElement('option');
+                    opt.value = o.value;
+                    opt.textContent = o.text;
+                    opt.dataset.edificio = o.ed || '';
+                    ubicSelect.appendChild(opt);
+                }
+            });
+
+            // restore selected if present in new list
+            const selected = '{{ request('id_ubicacion_actual') }}';
+            if(selected){
+                Array.from(ubicSelect.options).forEach(opt => { if(opt.value === selected) opt.selected = true; });
+            }
+        }
+
+        edificioSelect.addEventListener('change', function(e){
+            filterUbicaciones(e.target.value);
+        });
+
+        // initialize on load
+        const initialEd = '{{ request('id_edificio') }}';
+        if(initialEd){
+            edificioSelect.value = initialEd;
+        }
+        filterUbicaciones(initialEd);
+    })();
+</script>
 @endsection
