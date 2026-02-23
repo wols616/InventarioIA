@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Persona;
 use App\Models\Role;
 use App\Models\Departamento;
+use App\Models\AsignacionActivo;
+use App\Models\Inventario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 
@@ -86,6 +88,7 @@ class PersonaController extends Controller
         $data = $request->validate([
             'id_rol' => 'required|integer',
             'id_departamento' => 'required|integer',
+            'estado' => 'required|boolean',
             'nombre' => 'required|string|max:100',
             'apellido' => 'required|string|max:100',
             'dui' => 'nullable|string|max:20',
@@ -100,7 +103,35 @@ class PersonaController extends Controller
     {
         $persona->estado = 0;
         $persona->save();
+
+        // inactivate active assignments and return activos to inventory
+        $asignaciones = AsignacionActivo::where('id_persona', $persona->id_persona)->where('estado', 1)->get();
+        foreach($asignaciones as $asig){
+            // mark assignment inactive
+            $asig->estado = 0;
+            // optionally set fecha_fin to today if column exists
+            if($asig->fecha_fin === null && property_exists($asig, 'fecha_fin')){
+                $asig->fecha_fin = date('Y-m-d');
+            }
+            $asig->save();
+
+            // add the activo back to inventory (increment by 1)
+            $inv = Inventario::where('id_activo', $asig->id_activo)->first();
+            if($inv){
+                $inv->cantidad = intval($inv->cantidad) + 1;
+                $inv->save();
+            } else {
+                Inventario::create([
+                    'id_activo' => $asig->id_activo,
+                    'cantidad' => 1,
+                    'descripcion' => null,
+                    'cantidad_minima' => 0,
+                    'cantidad_maxima' => 0,
+                ]);
+            }
+        }
+
         if (request()->wantsJson()) return response('', 200);
-        return Redirect::route('personas.index')->with('success', 'Persona inactivada');
+        return Redirect::route('personas.index')->with('success', 'Persona inactivada y asignaciones actualizadas');
     }
 }

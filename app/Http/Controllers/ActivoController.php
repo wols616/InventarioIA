@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Models\Edificio;
 use App\Models\Area;
 use App\Models\UbicacionFisica;
+use App\Models\Inventario;
 
 class ActivoController extends Controller
 {
@@ -83,9 +84,24 @@ class ActivoController extends Controller
             'numero_serie' => 'nullable|string|max:100',
             'fecha_adquisicion' => 'nullable|date',
             'valor_adquisicion' => 'nullable|numeric',
+            'acumulable' => 'nullable|boolean',
+            'cantidad_inventario' => 'nullable|integer|min:1',
         ]);
 
-        Activo::create($data);
+        $activo = Activo::create($data);
+
+        // create Inventario record: if acumulable is checked use provided cantidad, otherwise default 1
+        $isAcumulable = $request->boolean('acumulable');
+        $cantidad = $isAcumulable ? intval($request->input('cantidad_inventario', 1)) : 1;
+
+        Inventario::create([
+            'id_activo' => $activo->id_activo,
+            'cantidad' => $cantidad,
+            'descripcion' => null,
+            'cantidad_minima' => 0,
+            'cantidad_maxima' => 0,
+        ]);
+
         return redirect()->route('activos.index')->with('success', 'Activo creado correctamente');
     }
 

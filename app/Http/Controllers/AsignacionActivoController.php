@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 
 class AsignacionActivoController extends Controller
 {
@@ -125,7 +126,25 @@ class AsignacionActivoController extends Controller
         $data['estado'] = $request->boolean('estado', true);
 
         try{
-            AsignacionActivo::create($data);
+            DB::transaction(function() use ($data){
+                AsignacionActivo::create($data);
+                // disminuir inventario en 1
+                $inv = Inventario::where('id_activo', $data['id_activo'])->first();
+                if($inv){
+                    $inv->cantidad = intval($inv->cantidad) - 1;
+                    if($inv->cantidad < 0) $inv->cantidad = 0;
+                    $inv->save();
+                } else {
+                    // crear registro con cantidad 0 (se resta 1 pero no. Esto es una condición atípica)
+                    Inventario::create([
+                        'id_activo' => $data['id_activo'],
+                        'cantidad' => 0,
+                        'descripcion' => null,
+                        'cantidad_minima' => 0,
+                        'cantidad_maxima' => 0,
+                    ]);
+                }
+            });
         } catch (QueryException $e) {
             Log::error('DB error creating asignacion: '.$e->getMessage());
             return back()->withErrors(['general' => 'Error al guardar la asignación en la base de datos.'])->withInput();
@@ -222,8 +241,85 @@ class AsignacionActivoController extends Controller
         $data['es_responsable_principal'] = $request->boolean('es_responsable_principal');
         $data['estado'] = $request->boolean('estado', true);
 
+        $oldEstado = (bool)$asignacion->estado;
+        $oldActivoId = $asignacion->id_activo;
+        $newEstado = (bool)$data['estado'];
+        $newActivoId = $data['id_activo'];
+
         try{
-            $asignacion->update($data);
+            DB::transaction(function() use ($asignacion, $data, $oldEstado, $oldActivoId, $newEstado, $newActivoId){
+                // handle inventory adjustments based on transitions
+                // case: previously active, now inactive -> return to inventory (increment old)
+                if($oldEstado && !$newEstado){
+                    $invOld = Inventario::where('id_activo', $oldActivoId)->first();
+                    if($invOld){
+                        $invOld->cantidad = intval($invOld->cantidad) + 1;
+                        $invOld->save();
+                    } else {
+                        Inventario::create([
+                            'id_activo' => $oldActivoId,
+                            'cantidad' => 1,
+                            'descripcion' => null,
+                            'cantidad_minima' => 0,
+                            'cantidad_maxima' => 0,
+                        ]);
+                    }
+                }
+
+                // case: previously inactive, now active -> consume inventory (decrement new)
+                if(!$oldEstado && $newEstado){
+                    $invNew = Inventario::where('id_activo', $newActivoId)->first();
+                    if($invNew){
+                        $invNew->cantidad = intval($invNew->cantidad) - 1;
+                        if($invNew->cantidad < 0) $invNew->cantidad = 0;
+                        $invNew->save();
+                    } else {
+                        Inventario::create([
+                            'id_activo' => $newActivoId,
+                            'cantidad' => 0,
+                            'descripcion' => null,
+                            'cantidad_minima' => 0,
+                            'cantidad_maxima' => 0,
+                        ]);
+                    }
+                }
+
+                // case: active -> active but activo changed: return old, consume new
+                if($oldEstado && $newEstado && $oldActivoId != $newActivoId){
+                    // return old
+                    $invOld = Inventario::where('id_activo', $oldActivoId)->first();
+                    if($invOld){
+                        $invOld->cantidad = intval($invOld->cantidad) + 1;
+                        $invOld->save();
+                    } else {
+                        Inventario::create([
+                            'id_activo' => $oldActivoId,
+                            'cantidad' => 1,
+                            'descripcion' => null,
+                            'cantidad_minima' => 0,
+                            'cantidad_maxima' => 0,
+                        ]);
+                    }
+                    // consume new
+                    $invNew = Inventario::where('id_activo', $newActivoId)->first();
+                    if($invNew){
+                        $invNew->cantidad = intval($invNew->cantidad) - 1;
+                        if($invNew->cantidad < 0) $invNew->cantidad = 0;
+                        $invNew->save();
+                    } else {
+                        Inventario::create([
+                            'id_activo' => $newActivoId,
+                            'cantidad' => 0,
+                            'descripcion' => null,
+                            'cantidad_minima' => 0,
+                            'cantidad_maxima' => 0,
+                        ]);
+                    }
+                }
+
+                // finally update the assignment
+                $asignacion->update($data);
+            });
         } catch (QueryException $e) {
             Log::error('DB error updating asignacion: '.$e->getMessage());
             return back()->withErrors(['general' => 'Error al actualizar la asignación en la base de datos.'])->withInput();
@@ -237,6 +333,23 @@ class AsignacionActivoController extends Controller
 
     public function destroy(AsignacionActivo $asignacion)
     {
+        // Si estaba activa, devolver al inventario
+        if($asignacion->estado){
+            $inv = Inventario::where('id_activo', $asignacion->id_activo)->first();
+            if($inv){
+                $inv->cantidad = intval($inv->cantidad) + 1;
+                $inv->save();
+            } else {
+                Inventario::create([
+                    'id_activo' => $asignacion->id_activo,
+                    'cantidad' => 1,
+                    'descripcion' => null,
+                    'cantidad_minima' => 0,
+                    'cantidad_maxima' => 0,
+                ]);
+            }
+        }
+
         // Marcamos como inactiva en lugar de borrar físicamente
         $asignacion->estado = false;
         $asignacion->save();

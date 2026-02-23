@@ -109,6 +109,18 @@
                         <label for="valor_adquisicion" class="block text-sm font-medium text-gray-700 mb-2">Valor de Adquisición</label>
                         <input type="number" step="0.01" name="valor_adquisicion" id="valor_adquisicion" value="{{ old('valor_adquisicion') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                     </div>
+
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="acumulable_checkbox" name="acumulable" value="1" {{ old('acumulable') ? 'checked' : '' }} class="h-4 w-4 text-brand-600 border-gray-300 rounded">
+                            <span class="text-sm font-medium text-gray-700">Acumulable (crear en Inventario)</span>
+                        </label>
+
+                        <div id="cantidad_container" class="mt-3" style="display: {{ old('acumulable') ? 'block' : 'none' }};">
+                            <label for="cantidad_inventario" class="block text-sm font-medium text-gray-700 mb-2">Cantidad a agregar</label>
+                            <input type="number" name="cantidad_inventario" id="cantidad_inventario" min="1" value="{{ old('cantidad_inventario', 1) }}" class="w-40 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
@@ -191,6 +203,42 @@
                 // default populate all
                 populateAreas('');
                 populateUbicaciones('');
+            }
+
+            // acumulable toggle logic
+            const acumulableCheckbox = document.getElementById('acumulable_checkbox');
+            const cantidadContainer = document.getElementById('cantidad_container');
+            const cantidadInput = document.getElementById('cantidad_inventario');
+
+            function updateCantidadVisibility(){
+                if(acumulableCheckbox && cantidadContainer && cantidadInput){
+                    if(acumulableCheckbox.checked){
+                        cantidadContainer.style.display = 'block';
+                        if(!cantidadInput.value || Number(cantidadInput.value) < 1) cantidadInput.value = 1;
+                    } else {
+                        cantidadContainer.style.display = 'none';
+                        cantidadInput.value = 1;
+                    }
+                }
+            }
+
+            if(acumulableCheckbox){
+                acumulableCheckbox.addEventListener('change', updateCantidadVisibility);
+            }
+            // ensure correct state on load
+            updateCantidadVisibility();
+
+            // on submit ensure there's always a cantidad >=1
+            const form = document.querySelector('form[action="{{ route('activos.store') }}"]');
+            if(form){
+                form.addEventListener('submit', function(){
+                    if(acumulableCheckbox && cantidadInput){
+                        if(!acumulableCheckbox.checked){
+                            cantidadInput.value = 1;
+                        }
+                        if(!cantidadInput.value || Number(cantidadInput.value) < 1) cantidadInput.value = 1;
+                    }
+                });
             }
         })();
     </script>
