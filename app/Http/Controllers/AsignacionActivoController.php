@@ -55,16 +55,34 @@ class AsignacionActivoController extends Controller
         $activos = Activo::whereHas('estado', function($q){
             $q->where('es_operativo', true);
         })->orderBy('codigo')->get();
-        // Añadir disponibilidad a cada activo
-        $activos->transform(function($activo){
-            $inv = Inventario::where('id_activo', $activo->id_activo)->first();
-            $stock = $inv ? (int)$inv->cantidad : 0;
-            $assigned = AsignacionActivo::where('id_activo', $activo->id_activo)
-                ->where('estado', true)
-                ->where(function($q){
-                    $q->whereNull('fecha_fin')
-                      ->orWhere('fecha_fin', '>', Carbon::today()->toDateString());
-                })->count();
+
+        // Evitar N+1: obtener inventario y conteo de asignaciones activas en 2 consultas
+        $activoIds = $activos->pluck('id_activo')->all();
+
+        $inventarios = Inventario::whereIn('id_activo', $activoIds)
+            ->get()
+            ->pluck('cantidad', 'id_activo')
+            ->map(function($v){ return (int)$v; });
+
+        $today = Carbon::today()->toDateString();
+        $assignedCounts = AsignacionActivo::select('id_activo')
+            ->selectRaw('count(*) as cnt')
+            ->whereIn('id_activo', $activoIds)
+            ->where('estado', true)
+            ->where(function($q) use ($today){
+                $q->whereNull('fecha_fin')
+                  ->orWhere('fecha_fin', '>', $today);
+            })
+            ->groupBy('id_activo')
+            ->get()
+            ->pluck('cnt', 'id_activo')
+            ->map(function($v){ return (int)$v; });
+
+        $activos->transform(function($activo) use ($inventarios, $assignedCounts){
+            $stock = $inventarios[$activo->id_activo] ?? 0;
+            $assigned = $assignedCounts[$activo->id_activo] ?? 0;
+            $activo->stock = $stock;
+            $activo->assigned = $assigned;
             $activo->available = max(0, $stock - $assigned);
             return $activo;
         });
@@ -169,15 +187,31 @@ class AsignacionActivoController extends Controller
             $q->where('es_operativo', true);
         })->orderBy('codigo')->get();
 
-        $activos->transform(function($activo){
-            $inv = Inventario::where('id_activo', $activo->id_activo)->first();
-            $stock = $inv ? (int)$inv->cantidad : 0;
-            $assigned = AsignacionActivo::where('id_activo', $activo->id_activo)
-                ->where('estado', true)
-                ->where(function($q){
-                    $q->whereNull('fecha_fin')
-                      ->orWhere('fecha_fin', '>', Carbon::today()->toDateString());
-                })->count();
+        // Evitar N+1: obtener inventario y conteo de asignaciones activas en 2 consultas
+        $activoIds = $activos->pluck('id_activo')->all();
+
+        $inventarios = Inventario::whereIn('id_activo', $activoIds)
+            ->get()
+            ->pluck('cantidad', 'id_activo')
+            ->map(function($v){ return (int)$v; });
+
+        $today = Carbon::today()->toDateString();
+        $assignedCounts = AsignacionActivo::select('id_activo')
+            ->selectRaw('count(*) as cnt')
+            ->whereIn('id_activo', $activoIds)
+            ->where('estado', true)
+            ->where(function($q) use ($today){
+                $q->whereNull('fecha_fin')
+                  ->orWhere('fecha_fin', '>', $today);
+            })
+            ->groupBy('id_activo')
+            ->get()
+            ->pluck('cnt', 'id_activo')
+            ->map(function($v){ return (int)$v; });
+
+        $activos->transform(function($activo) use ($inventarios, $assignedCounts){
+            $stock = $inventarios[$activo->id_activo] ?? 0;
+            $assigned = $assignedCounts[$activo->id_activo] ?? 0;
             $activo->available = max(0, $stock - $assigned);
             return $activo;
         });
@@ -245,6 +279,11 @@ class AsignacionActivoController extends Controller
         $oldActivoId = $asignacion->id_activo;
         $newEstado = (bool)$data['estado'];
         $newActivoId = $data['id_activo'];
+
+        // Si se está desactivando la asignación, asegurar que tenga fecha_fin = hoy
+        if ($oldEstado && !$newEstado) {
+            $data['fecha_fin'] = Carbon::today()->toDateString();
+        }
 
         try{
             DB::transaction(function() use ($asignacion, $data, $oldEstado, $oldActivoId, $newEstado, $newActivoId){
@@ -350,7 +389,8 @@ class AsignacionActivoController extends Controller
             }
         }
 
-        // Marcamos como inactiva en lugar de borrar físicamente
+        // Marcamos como inactiva en lugar de borrar físicamente y ponemos fecha_fin hoy
+        $asignacion->fecha_fin = Carbon::today()->toDateString();
         $asignacion->estado = false;
         $asignacion->save();
 

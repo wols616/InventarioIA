@@ -8,8 +8,11 @@
             <option value="">-- Seleccione activo --</option>
                 @foreach($activos as $activo)
                     @php $available = $activo->available ?? 0; @endphp
-                    <option value="{{ $activo->id_activo }}" {{ (old('id_activo', optional($asignacion)->id_activo ?? '') == $activo->id_activo) ? 'selected' : '' }} {{ $available <= 0 ? 'disabled' : '' }}>
-                        {{ $activo->codigo }} - {{ $activo->marca }} {{ $activo->modelo }} @if(isset($available)) (Disponibles: {{ $available }}) @endif
+                    <option value="{{ $activo->id_activo }}" {{ (old('id_activo', optional($asignacion)->id_activo ?? '') == $activo->id_activo) ? 'selected' : '' }} {{ ($activo->available ?? 0) <= 0 ? 'disabled' : '' }}>
+                        {{ $activo->codigo }} - {{ $activo->marca }} {{ $activo->modelo }}
+                        @if(isset($activo->stock) || isset($activo->assigned) || isset($activo->available))
+                            (Stock: {{ $activo->stock ?? 0 }} · Asignadas: {{ $activo->assigned ?? 0 }} · Disponibles: {{ $activo->available ?? 0 }})
+                        @endif
                     </option>
                 @endforeach
         </select>
@@ -17,6 +20,7 @@
 
     <div>
         <label for="id_persona" class="block text-sm font-medium text-gray-700 mb-2">Persona *</label>
+        <input type="text" id="id_persona_search" placeholder="Buscar persona por nombre o apellido..." class="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
         <select name="id_persona" id="id_persona" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
             <option value="">-- Seleccione persona --</option>
             @foreach($personas as $persona)
@@ -67,6 +71,21 @@
         search.addEventListener('input', function(){
             const q = this.value.trim().toLowerCase();
             Array.from(select.options).forEach(opt => {
+                if(!opt.value){ opt.hidden = false; return; }
+                const text = (opt.textContent || '').toLowerCase();
+                opt.hidden = q ? !text.includes(q) : false;
+            });
+        });
+    })();
+
+    // filtro para personas
+    (function(){
+        const searchP = document.getElementById('id_persona_search');
+        const selectP = document.getElementById('id_persona');
+        if(!searchP || !selectP) return;
+        searchP.addEventListener('input', function(){
+            const q = this.value.trim().toLowerCase();
+            Array.from(selectP.options).forEach(opt => {
                 if(!opt.value){ opt.hidden = false; return; }
                 const text = (opt.textContent || '').toLowerCase();
                 opt.hidden = q ? !text.includes(q) : false;

@@ -14,6 +14,11 @@ class InventarioController extends Controller
     {
         $query = Inventario::with('activo');
 
+        // Excluir inventarios cuyo activo está marcado como 'Eliminado' (id_estado = 9)
+        $query->whereDoesntHave('activo', function($q) {
+            $q->where('id_estado', 9);
+        });
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {

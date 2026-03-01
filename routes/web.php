@@ -27,6 +27,7 @@ use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\AsignacionActivoController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\ReporteController;
 
 // Authentication routes
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -77,6 +78,11 @@ Route::middleware(AuthenticateUsuario::class)->group(function () {
     Route::resource('documentos', DocumentoAdjuntoController::class)->only(['index','show']);
     Route::resource('personas', PersonaController::class)->parameters(['personas' => 'persona'])->only(['index','show']);
     Route::resource('asignaciones', AsignacionActivoController::class)->parameters(['asignaciones' => 'asignacion'])->only(['index','show']);
+
+    // Reportes: generador de reportes por persona
+    Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+    Route::post('/reportes/generar', [ReporteController::class, 'generar'])->name('reportes.generar');
+    Route::post('/reportes/pdf', [ReporteController::class, 'pdf'])->name('reportes.pdf');
 
     // Catalogos - read-only for non-admin
     Route::resource('tipos', TipoActivoController::class)->only(['index','show']);

@@ -142,6 +142,11 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Reportes -->
+                        <div>
+                            <a href="{{ route('reportes.index') }}" class="text-white hover:text-brand-200 px-3 py-2 rounded-md text-sm font-medium transition duration-200">Reportes</a>
+                        </div>
                     </div>
                 </div>
 
@@ -191,6 +196,7 @@
                 <a href="{{ route('movimientos.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Movimientos</a>
                 <a href="{{ route('asignaciones.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Asignaciones</a>
                 <a href="{{ route('mantenimientos.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Mantenimientos</a>
+                <a href="{{ route('reportes.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Reportes</a>
                 @if(isset($authUser) && in_array(($authUser->persona->rol->nombre ?? ''), ['Admin','Auditor']))
                     <a href="{{ route('auditorias.index') }}" class="text-white hover:bg-brand-800 block px-3 py-2 rounded-md text-base font-medium">Auditorías</a>
                 @endif
