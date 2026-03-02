@@ -28,6 +28,19 @@
                         </svg>
                         <span>Nuevo Chat</span>
                     </button>
+                    
+                    <button 
+                        id="btn-error-ocr"
+                        class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-white rounded-lg transition duration-200 flex items-center space-x-2 text-sm font-medium backdrop-blur-sm"
+                        title="¿Problemas con OCR? Click aquí"
+                        onclick="mostrarModalDiagnosticoVacio()"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <span>Error OCR</span>
+                    </button>
+                    
                     <div id="connection-status" class="flex items-center space-x-2">
                         <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
                         <span class="text-white text-sm">Desconectado</span>
@@ -49,10 +62,10 @@
                     <span class="text-xs text-gray-500">Usa "Bot Local" para probar sin n8n</span>
                 </div>
                 
-                <!-- Configuración de Webhook (solo visible en modo n8n) -->
+                <!-- Configuración de Webhook Chat (solo visible en modo n8n) -->
                 <div id="webhook-config" class="hidden">
                     <div class="flex items-center space-x-4">
-                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Webhook URL:</label>
+                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Chat URL:</label>
                         <input 
                             type="url" 
                             id="webhook-url" 
@@ -71,6 +84,29 @@
                         <strong>Formato:</strong> {"mensaje": "texto", "sessionId": "id"}
                     </div>
                 </div>
+                
+                <!-- Configuración de Webhook OCR -->
+                <div class="border-t border-gray-200 pt-3">
+                    <div class="flex items-center space-x-4">
+                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">OCR URL:</label>
+                        <input 
+                            type="url" 
+                            id="ocr-webhook-url" 
+                            placeholder="http://localhost:5678/webhook-test/analizar"
+                            class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                            value=""
+                        >
+                        <button 
+                            id="test-ocr-connection" 
+                            class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition duration-200"
+                        >
+                            Probar OCR
+                        </button>
+                    </div>
+                    <div class="mt-2 text-xs text-gray-600">
+                        <strong>📋 Cómo obtener la URL:</strong> En n8n → Workflow "Imagenes" → Nodo Webhook → Copiar "Webhook URL"
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -83,7 +119,42 @@
 
             <!-- Input de Mensaje -->
             <div class="border-t border-gray-200 px-6 py-4 bg-white">
+                <!-- Vista previa de imagen -->
+                <div id="image-preview-container" class="hidden mb-3 relative inline-block">
+                    <img id="image-preview" src="" alt="Vista previa" class="max-h-32 rounded-lg border-2 border-brand-300">
+                    <button 
+                        type="button" 
+                        id="remove-image-btn"
+                        class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 transition flex items-center justify-center"
+                        title="Eliminar imagen"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
                 <form id="chat-form" class="flex space-x-4">
+                    <!-- Input file oculto -->
+                    <input 
+                        type="file" 
+                        id="image-input" 
+                        accept="image/*"
+                        class="hidden"
+                    >
+                    
+                    <!-- Botón para adjuntar imagen -->
+                    <button 
+                        type="button" 
+                        id="attach-image-btn"
+                        class="px-3 py-3 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition duration-200 flex items-center space-x-2"
+                        title="Adjuntar imagen para análisis OCR"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </button>
+                    
                     <input 
                         type="text" 
                         id="message-input" 
@@ -111,6 +182,133 @@
         <h3 class="text-sm font-semibold text-gray-700 mb-3" id="suggestions-title">💡 ¿Qué te gustaría consultar?</h3>
         <div id="suggestions-wrapper" class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <!-- Las sugerencias se generarán dinámicamente según el contexto -->
+        </div>
+    </div>
+
+    <!-- Modal de Diagnóstico OCR -->
+    <div id="modal-diagnostico-ocr" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-red-600 px-6 py-4 rounded-t-lg">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        Error 500: Internal Server Error
+                    </h3>
+                    <button onclick="cerrarModalDiagnostico()" class="text-white hover:text-gray-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4">
+                <div class="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <p class="text-sm text-yellow-800">
+                        <strong>⚠️ n8n está respondiendo pero algo falla en el procesamiento.</strong><br>
+                        Esto significa que el servidor está activo, pero hay un error en el workflow.
+                    </p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-bold text-gray-900 mb-2">🔍 Información Técnica:</h4>
+                        <div class="bg-gray-100 rounded p-3 font-mono text-xs">
+                            <div><strong>URL:</strong> <span id="diag-url"></span></div>
+                            <div><strong>Método:</strong> POST</div>
+                            <div><strong>Content-Type:</strong> multipart/form-data</div>
+                            <div><strong>Campo imagen:</strong> "Imagen"</div>
+                            <div><strong>Archivo:</strong> <span id="diag-file"></span></div>
+                            <div class="mt-2"><strong>Respuesta servidor:</strong></div>
+                            <div class="bg-white p-2 mt-1 rounded border max-h-32 overflow-y-auto">
+                                <pre id="diag-response" class="text-red-600"></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-gray-900 mb-2">✅ Checklist de Solución:</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-start gap-2">
+                                <span class="text-lg">1️⃣</span>
+                                <div>
+                                    <strong>Verifica el workflow en n8n:</strong>
+                                    <ul class="text-sm text-gray-600 ml-4 mt-1">
+                                        <li>• Ve a <code class="bg-gray-200 px-2 py-0.5 rounded">http://localhost:5678</code></li>
+                                        <li>• Abre el workflow "Imagenes"</li>
+                                        <li>• Revisa las últimas ejecuciones (botón "Executions")</li>
+                                        <li>• <strong class="text-red-600">Busca qué nodo está fallando</strong></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-2">
+                                <span class="text-lg">2️⃣</span>
+                                <div>
+                                    <strong>Verifica la configuración del Webhook:</strong>
+                                    <ul class="text-sm text-gray-600 ml-4 mt-1">
+                                        <li>• Haz clic en el nodo "Webhook" en n8n</li>
+                                        <li>• <strong>HTTP Method:</strong> debe ser POST</li>
+                                        <li>• <strong>Response Mode:</strong> "When Last Node Finishes"</li>
+                                        <li>• No debe tener authentication (o configurarla correctamente)</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-2">
+                                <span class="text-lg">3️⃣</span>
+                                <div>
+                                    <strong>Verifica el nodo que procesa la imagen:</strong>
+                                    <ul class="text-sm text-gray-600 ml-4 mt-1">
+                                        <li>• ¿Tiene acceso al campo "Imagen"?</li>
+                                        <li>• ¿Las credenciales de API están configuradas? (si usa OCR externo)</li>
+                                        <li>• Ejecuta el workflow manualmente con una imagen de prueba</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-2">
+                                <span class="text-lg">4️⃣</span>
+                                <div>
+                                    <strong>Reinicia el workflow:</strong>
+                                    <ul class="text-sm text-gray-600 ml-4 mt-1">
+                                        <li>• Desactiva el workflow (toggle OFF)</li>
+                                        <li>• Espera 2 segundos</li>
+                                        <li>• Actívalo de nuevo (toggle ON)</li>
+                                        <li>• Intenta de nuevo desde el chatbot</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 class="font-bold text-blue-900 mb-2">💡 Prueba Manual:</h4>
+                        <p class="text-sm text-blue-800 mb-2">
+                            Ejecuta este comando en tu terminal para probar directamente:
+                        </p>
+                        <div class="bg-gray-900 text-green-400 p-3 rounded font-mono text-xs overflow-x-auto">
+                            <code id="diag-curl"></code>
+                        </div>
+                        <p class="text-xs text-blue-600 mt-2">
+                            Si este comando también da error 500, el problema está en n8n, no en el chatbot.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-3">
+                    <button onclick="window.open('http://localhost:5678', '_blank')" 
+                            class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition font-medium">
+                        🔗 Abrir n8n
+                    </button>
+                    <button onclick="cerrarModalDiagnostico()" 
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -186,15 +384,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
     const webhookUrlInput = document.getElementById('webhook-url');
+    const ocrWebhookUrlInput = document.getElementById('ocr-webhook-url');
     const testConnectionBtn = document.getElementById('test-connection');
+    const testOcrConnectionBtn = document.getElementById('test-ocr-connection');
     const connectionStatus = document.getElementById('connection-status');
     const botModeSelect = document.getElementById('bot-mode');
     const webhookConfig = document.getElementById('webhook-config');
+    
+    // Variables para manejo de imágenes
+    const imageInput = document.getElementById('image-input');
+    const attachImageBtn = document.getElementById('attach-image-btn');
+    const imagePreviewContainer = document.getElementById('image-preview-container');
+    const imagePreview = document.getElementById('image-preview');
+    const removeImageBtn = document.getElementById('remove-image-btn');
+    let selectedImage = null;
 
     const savedWebhookUrl = localStorage.getItem('webhook_url') || 'http://localhost:5678/webhook-test/asistente';
+    const savedOcrWebhookUrl = localStorage.getItem('ocr_webhook_url') || 'http://localhost:5678/webhook-test/analizar';
     const savedBotMode = localStorage.getItem('bot_mode') || 'local';
     
     webhookUrlInput.value = savedWebhookUrl;
+    ocrWebhookUrlInput.value = savedOcrWebhookUrl;
     botModeSelect.value = savedBotMode;
 
     // =========================================================================
@@ -434,6 +644,10 @@ document.addEventListener('DOMContentLoaded', function() {
     webhookUrlInput.addEventListener('change', function() {
         localStorage.setItem('webhook_url', this.value);
     });
+    
+    ocrWebhookUrlInput.addEventListener('change', function() {
+        localStorage.setItem('ocr_webhook_url', this.value);
+    });
 
     function updateConnectionStatus(isConnected, message = '') {
         const statusDot = connectionStatus.querySelector('.w-2');
@@ -479,6 +693,59 @@ document.addEventListener('DOMContentLoaded', function() {
         } finally {
             testConnectionBtn.disabled = false;
             testConnectionBtn.textContent = 'Probar Conexión';
+        }
+    });
+    
+    testOcrConnectionBtn.addEventListener('click', async function() {
+        const ocrUrl = ocrWebhookUrlInput.value.trim();
+        
+        if (!ocrUrl) {
+            alert('⚠️ Por favor ingresa la URL del webhook OCR');
+            return;
+        }
+
+        testOcrConnectionBtn.disabled = true;
+        testOcrConnectionBtn.textContent = 'Probando...';
+
+        try {
+            // Crear una imagen de prueba pequeña (1x1 pixel transparente PNG)
+            const testBlob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
+                .then(res => res.blob());
+            
+            const testFile = new File([testBlob], 'test.png', { type: 'image/png' });
+            
+            const formData = new FormData();
+            formData.append('Imagen', testFile);
+            formData.append('test', 'true');
+            
+            console.log('🔍 Enviando prueba a:', ocrUrl);
+            
+            const response = await fetch(ocrUrl, {
+                method: 'POST',
+                body: formData
+            });
+
+            console.log('📥 Respuesta recibida:', response.status, response.statusText);
+            
+            const responseText = await response.text();
+            console.log('📄 Contenido:', responseText);
+
+            if (response.ok) {
+                try {
+                    const data = JSON.parse(responseText);
+                    alert(`✅ Webhook OCR funciona correctamente\n\nRespuesta:\n${JSON.stringify(data, null, 2)}`);
+                } catch {
+                    alert(`✅ Webhook OCR responde (código 200)\n\nRespuesta:\n${responseText.substring(0, 200)}`);
+                }
+            } else {
+                alert(`❌ Error ${response.status}: ${response.statusText}\n\nVerifica:\n1. Que el workflow esté publicado\n2. Que la URL sea correcta\n3. Que el nodo Webhook esté configurado\n\nRespuesta:\n${responseText.substring(0, 300)}`);
+            }
+        } catch (error) {
+            console.error('❌ Error en prueba OCR:', error);
+            alert(`❌ Error de conexión: ${error.message}\n\nVerifica:\n1. Que n8n esté corriendo\n2. La URL correcta del webhook\n3. No hay problemas de CORS`);
+        } finally {
+            testOcrConnectionBtn.disabled = false;
+            testOcrConnectionBtn.textContent = 'Probar OCR';
         }
     });
 
@@ -600,10 +867,159 @@ document.addEventListener('DOMContentLoaded', function() {
         return text;
     }
 
+    // =========================================================================
+    // FUNCIONALIDAD DE SUBIDA DE IMÁGENES PARA OCR
+    // =========================================================================
+    
+    // Abrir selector de archivo cuando se hace clic en el botón de adjuntar
+    attachImageBtn.addEventListener('click', function() {
+        imageInput.click();
+    });
+    
+    // Manejar selección de imagen
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        
+        if (file) {
+            // Validar que sea una imagen
+            if (!file.type.startsWith('image/')) {
+                alert('⚠️ Por favor selecciona un archivo de imagen válido');
+                return;
+            }
+            
+            // Validar tamaño (máximo 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('⚠️ La imagen es demasiado grande. Máximo 10MB');
+                return;
+            }
+            
+            selectedImage = file;
+            
+            // Mostrar vista previa
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreviewContainer.classList.remove('hidden');
+                attachImageBtn.classList.add('bg-brand-100', 'text-brand-600');
+                attachImageBtn.classList.remove('bg-gray-100', 'text-gray-600');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Eliminar imagen seleccionada
+    removeImageBtn.addEventListener('click', function() {
+        selectedImage = null;
+        imageInput.value = '';
+        imagePreviewContainer.classList.add('hidden');
+        imagePreview.src = '';
+        attachImageBtn.classList.remove('bg-brand-100', 'text-brand-600');
+        attachImageBtn.classList.add('bg-gray-100', 'text-gray-600');
+    });
+    
+    /**
+     * Envía una imagen al endpoint de n8n para análisis OCR
+     * @param {File} imageFile - Archivo de imagen a analizar
+     * @returns {Promise<Object>} - Respuesta del servidor
+     */
+    async function sendImageForOCR(imageFile) {
+        // Obtener URL configurada del webhook OCR
+        const ocrEndpoint = ocrWebhookUrlInput.value.trim();
+        
+        if (!ocrEndpoint) {
+            return {
+                success: false,
+                error: 'No se ha configurado la URL del webhook OCR. Por favor configúrala en la sección de ajustes.'
+            };
+        }
+        
+        console.log('📤 Enviando imagen para OCR...');
+        console.log('📍 Endpoint:', ocrEndpoint);
+        console.log('📄 Archivo:', imageFile.name, '|', imageFile.type, '|', (imageFile.size / 1024).toFixed(2) + ' KB');
+        
+        try {
+            // Crear FormData con la imagen usando la clave exacta "Imagen"
+            const formData = new FormData();
+            formData.append('Imagen', imageFile);
+            
+            // Opcional: agregar sessionId si es necesario
+            formData.append('sessionId', getSessionId());
+            
+            console.log('🚀 Realizando petición POST...');
+            
+            // Realizar petición HTTP POST con multipart/form-data
+            const response = await fetch(ocrEndpoint, {
+                method: 'POST',
+                body: formData
+                // No establecer Content-Type - el navegador lo hará automáticamente con el boundary correcto
+            });
+            
+            console.log('📥 Respuesta recibida:', response.status, response.statusText);
+            
+            // Obtener el texto de la respuesta primero
+            const responseText = await response.text();
+            console.log('📄 Contenido de respuesta:', responseText.substring(0, 500));
+            
+            // Verificar si la respuesta fue exitosa
+            if (!response.ok) {
+                // Guardar información del error para el modal de diagnóstico
+                const errorInfo = {
+                    success: false,
+                    errorCode: response.status,
+                    errorMessage: response.statusText,
+                    responseText: responseText,
+                    error: `Error ${response.status}: ${response.statusText}\n\nDetalles: ${responseText.substring(0, 200)}`
+                };
+                
+                console.error('❌ Error HTTP:', errorInfo);
+                return errorInfo;
+            }
+            
+            // Intentar parsear respuesta JSON
+            let data;
+            try {
+                data = JSON.parse(responseText);
+                console.log('✅ JSON parseado:', data);
+            } catch (e) {
+                console.warn('⚠️ La respuesta no es JSON válido');
+                return {
+                    success: true,
+                    data: { text: responseText }
+                };
+            }
+            
+            return {
+                success: true,
+                data: data
+            };
+            
+        } catch (error) {
+            console.error('❌ Error al enviar imagen para OCR:', error);
+            
+            // Manejo de errores específicos
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                return {
+                    success: false,
+                    error: `No se pudo conectar con el servidor de n8n.\n\n✓ Verifica que n8n esté activo\n✓ URL correcta: ${ocrEndpoint}\n✓ Workflow publicado`
+                };
+            }
+            
+            return {
+                success: false,
+                error: error.message || 'Error desconocido al procesar la imagen'
+            };
+        }
+    }
+    
+    // =========================================================================
+    // FIN DE FUNCIONALIDAD DE IMÁGENES
+    // =========================================================================
+
     async function sendMessage(message) {
         if (!message.trim()) return;
 
         const botMode = botModeSelect.value;
+        console.log('🗨️ RUTA 2: Chat de Texto Normal - Webhook:', webhookUrlInput.value);
 
         addMessage(message, true);
         messageInput.value = '';
@@ -671,9 +1087,315 @@ document.addEventListener('DOMContentLoaded', function() {
 
     chatForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        const message = messageInput.value.trim();
-        if (message) sendMessage(message);
+        
+        // =========================================================================
+        // ENRUTAMIENTO: Decide qué webhook usar según el tipo de mensaje
+        // =========================================================================
+        
+        if (selectedImage) {
+            // ✅ RUTA 1: Análisis OCR de Imagen
+            // Webhook: http://localhost:5678/webhook-test/analizar
+            console.log('🖼️ RUTA: Análisis OCR - Enviando imagen a webhook OCR');
+            handleImageSubmit();
+        } else {
+            // ✅ RUTA 2: Chat de Texto Normal
+            // Webhook: http://localhost:5678/webhook-test/asistente (o bot local)
+            const message = messageInput.value.trim();
+            if (message) {
+                console.log('💬 RUTA: Chat Normal - Enviando texto a webhook asistente');
+                sendMessage(message);
+            }
+        }
     });
+    
+    /**
+     * Maneja el envío de una imagen para análisis OCR
+     */
+    async function handleImageSubmit() {
+        const messageText = messageInput.value.trim() || 'Analizar esta imagen';
+        
+        // Mostrar mensaje del usuario con indicador de imagen
+        addMessage(`📷 ${messageText}`, true);
+        
+        // Deshabilitar controles
+        sendButton.disabled = true;
+        messageInput.disabled = true;
+        attachImageBtn.disabled = true;
+        
+        // Mostrar indicador de carga
+        showTypingIndicator();
+        
+        try {
+            // Enviar imagen al endpoint de OCR
+            console.log('🖼️ Procesando imagen:', selectedImage.name);
+            const result = await sendImageForOCR(selectedImage);
+            
+            removeTypingIndicator();
+            
+            if (result.success) {
+                // Procesar respuesta exitosa
+                const ocrData = result.data;
+                
+                console.log('✅ Respuesta exitosa del OCR:', ocrData);
+                
+                // Extraer el mensaje de respuesta (adaptar según la estructura de tu respuesta)
+                let botMessage = '';
+                
+                // 1. Buscar mensajes directos del LLM/Asistente
+                if (ocrData.reply) {
+                    botMessage = ocrData.reply;
+                } else if (ocrData.response && typeof ocrData.response === 'string') {
+                    botMessage = ocrData.response;
+                } else if (ocrData.output && typeof ocrData.output === 'string') {
+                    botMessage = ocrData.output;
+                } else if (ocrData.message && typeof ocrData.message === 'string') {
+                    botMessage = ocrData.message;
+                    
+                // 2. Buscar datos estructurados de OCR/Análisis
+                } else if (ocrData.analisis || ocrData.texto || ocrData.text || ocrData.data) {
+                    let datosExtraidos = {};
+                    
+                    // Recopilar todos los campos con datos útiles
+                    if (ocrData.analisis !== undefined && ocrData.analisis !== null) {
+                        // Si analisis es un string JSON, parsearlo
+                        if (typeof ocrData.analisis === 'string') {
+                            try {
+                                const parsed = JSON.parse(ocrData.analisis);
+                                if (typeof parsed === 'object' && parsed !== null) {
+                                    datosExtraidos = parsed;
+                                } else {
+                                    datosExtraidos.analisis = ocrData.analisis;
+                                }
+                            } catch (e) {
+                                datosExtraidos.analisis = ocrData.analisis;
+                            }
+                        } else if (typeof ocrData.analisis === 'object') {
+                            datosExtraidos = ocrData.analisis;
+                        } else {
+                            datosExtraidos.analisis = ocrData.analisis;
+                        }
+                    }
+                    if (ocrData.texto) datosExtraidos.texto = ocrData.texto;
+                    if (ocrData.text) datosExtraidos.text = ocrData.text;
+                    if (ocrData.codigo) datosExtraidos.codigo = ocrData.codigo;
+                    if (ocrData.barcode) datosExtraidos.barcode = ocrData.barcode;
+                    if (ocrData.qr) datosExtraidos.qr = ocrData.qr;
+                    if (ocrData.descripcion) datosExtraidos.descripcion = ocrData.descripcion;
+                    if (ocrData.categoria) datosExtraidos.categoria = ocrData.categoria;
+                    if (ocrData.marca) datosExtraidos.marca = ocrData.marca;
+                    if (ocrData.modelo) datosExtraidos.modelo = ocrData.modelo;
+                    if (ocrData.data && typeof ocrData.data === 'object') {
+                        Object.assign(datosExtraidos, ocrData.data);
+                    }
+                    
+                    // Mapa de emojis por tipo de campo
+                    const emojiMap = {
+                        'producto': '🏷️',
+                        'product': '🏷️',
+                        'nombre': '🏷️',
+                        'name': '🏷️',
+                        'serial': '🔢',
+                        'serie': '🔢',
+                        's/n': '🔢',
+                        'sn': '🔢',
+                        'part_number': '🔧',
+                        'part': '🔧',
+                        'numero_parte': '🔧',
+                        'specs': '⚙️',
+                        'especificaciones': '⚙️',
+                        'specifications': '⚙️',
+                        'modelo': '📱',
+                        'model': '📱',
+                        'marca': '🏢',
+                        'brand': '🏢',
+                        'fabricante': '🏢',
+                        'manufacturer': '🏢',
+                        'categoria': '📂',
+                        'category': '📂',
+                        'tipo': '📂',
+                        'type': '📂',
+                        'codigo': '🔖',
+                        'code': '🔖',
+                        'barcode': '🔖',
+                        'qr': '📷',
+                        'descripcion': '📝',
+                        'description': '📝',
+                        'precio': '💰',
+                        'price': '💰',
+                        'costo': '💰',
+                        'cost': '💰',
+                        'fecha': '📅',
+                        'date': '📅',
+                        'ubicacion': '📍',
+                        'location': '📍',
+                        'estado': '🔄',
+                        'status': '🔄',
+                        'condicion': '✨',
+                        'condition': '✨',
+                        'cantidad': '🔢',
+                        'quantity': '🔢',
+                        'stock': '📦',
+                        'inventario': '📦',
+                        'inventory': '📦'
+                    };
+                    
+                    // Función para obtener emoji de un campo
+                    const getEmoji = (campo) => {
+                        const key = campo.toLowerCase().replace(/[_\s-]/g, '');
+                        return emojiMap[key] || '•';
+                    };
+                    
+                    // Construir mensaje formateado
+                    if (Object.keys(datosExtraidos).length > 0) {
+                        botMessage = `✅ **Análisis OCR Completado**\n\n`;
+                        botMessage += `╭─────────────────────────╮\n`;
+                        botMessage += `│  **📋 INFORMACIÓN DETECTADA**  │\n`;
+                        botMessage += `╰─────────────────────────╯\n\n`;
+                        
+                        // Formatear cada campo detectado con diseño de tarjeta
+                        for (const [campo, valor] of Object.entries(datosExtraidos)) {
+                            const emoji = getEmoji(campo);
+                            const nombreCampo = campo
+                                .replace(/_/g, ' ')
+                                .split(' ')
+                                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                .join(' ');
+                            
+                            if (typeof valor === 'string' && valor.trim().length > 0) {
+                                // Formatear según longitud del texto
+                                if (valor.length > 100) {
+                                    const palabras = valor.trim().split(/\s+/).length;
+                                    botMessage += `${emoji} **${nombreCampo}:**\n`;
+                                    botMessage += `   *(${valor.length} caracteres, ${palabras} palabras)*\n\n`;
+                                    botMessage += `\`\`\`\n${valor}\n\`\`\`\n\n`;
+                                } else {
+                                    botMessage += `${emoji} **${nombreCampo}:** ${valor}\n\n`;
+                                }
+                            } else if (typeof valor === 'number') {
+                                botMessage += `${emoji} **${nombreCampo}:** ${valor}\n\n`;
+                            } else if (typeof valor === 'boolean') {
+                                botMessage += `${emoji} **${nombreCampo}:** ${valor ? '✓ Sí' : '✗ No'}\n\n`;
+                            } else if (Array.isArray(valor)) {
+                                botMessage += `${emoji} **${nombreCampo}:**\n`;
+                                valor.forEach(item => {
+                                    botMessage += `   • ${item}\n`;
+                                });
+                                botMessage += `\n`;
+                            } else if (typeof valor === 'object' && valor !== null) {
+                                botMessage += `${emoji} **${nombreCampo}:**\n`;
+                                for (const [subKey, subVal] of Object.entries(valor)) {
+                                    botMessage += `   • ${subKey}: ${subVal}\n`;
+                                }
+                                botMessage += `\n`;
+                            } else {
+                                botMessage += `${emoji} **${nombreCampo}:** ${valor}\n\n`;
+                            }
+                        }
+                        
+                        botMessage += `───────────────────────\n\n`;
+                        botMessage += `📁 **Archivo:** ${selectedImage.name}`;
+                    } else {
+                        // Campos vacíos
+                        botMessage = `⚠️ **Análisis OCR Completado**\n\n` +
+                                   `❌ **No se detectó información** en la imagen.\n\n` +
+                                   `**Posibles causas:**\n` +
+                                   `• La imagen no contiene texto legible\n` +
+                                   `• El texto es demasiado pequeño o borroso\n` +
+                                   `• La calidad de la imagen es insuficiente\n` +
+                                   `• El formato no es compatible\n\n` +
+                                   `**Sugerencias:**\n` +
+                                   `• Intenta con una imagen de mayor resolución\n` +
+                                   `• Asegúrate de que el contenido sea claro y visible\n` +
+                                   `• Verifica que la imagen no esté rotada o invertida`;
+                    }
+                    
+                // 3. Buscar campo result
+                } else if (ocrData.result) {
+                    botMessage = typeof ocrData.result === 'string' 
+                        ? ocrData.result 
+                        : `✅ **Resultado del análisis:**\n\n\`\`\`json\n${JSON.stringify(ocrData.result, null, 2)}\n\`\`\``;
+                        
+                // 4. Respuesta genérica - intentar extraer información útil
+                } else {
+                    // Buscar cualquier campo que no sea metadata
+                    const camposExcluidos = ['status', 'success', 'ok', 'timestamp', 'duration', 'executionId'];
+                    const camposUtiles = Object.entries(ocrData).filter(([key]) => 
+                        !camposExcluidos.includes(key.toLowerCase())
+                    );
+                    
+                    if (camposUtiles.length > 0) {
+                        botMessage = `✅ **Análisis Completado**\n\n`;
+                        
+                        for (const [campo, valor] of camposUtiles) {
+                            const nombreCampo = campo.charAt(0).toUpperCase() + campo.slice(1);
+                            
+                            if (typeof valor === 'string' && valor.trim().length > 0) {
+                                botMessage += `**${nombreCampo}:** \`${valor}\`\n\n`;
+                            } else if (typeof valor === 'number') {
+                                botMessage += `**${nombreCampo}:** \`${valor}\`\n\n`;
+                            } else if (typeof valor === 'object' && valor !== null) {
+                                botMessage += `**${nombreCampo}:**\n\`\`\`json\n${JSON.stringify(valor, null, 2)}\n\`\`\`\n\n`;
+                            }
+                        }
+                    } else {
+                        // Última opción: mostrar todo
+                        botMessage = `✅ **Imagen Procesada**\n\n` +
+                                   `📦 **Respuesta del servidor:**\n\n` +
+                                   `\`\`\`json\n${JSON.stringify(ocrData, null, 2)}\n\`\`\`\n\n` +
+                                   `ℹ️ *Configura el workflow en n8n para devolver campos como: analisis, texto, codigo, etc.*`;
+                    }
+                }
+                
+                addMessage(botMessage, false);
+                updateConnectionStatus(true, 'OCR completado');
+                
+            } else {
+                // Mostrar mensaje de error detallado
+                console.error('❌ Error en OCR:', result.error);
+                
+                // Si es un error 500, mostrar modal de diagnóstico
+                if (result.errorCode === 500 && result.responseText) {
+                    mostrarModalDiagnostico(
+                        ocrWebhookUrlInput.value.trim(),
+                        selectedImage.name + ' (' + (selectedImage.size / 1024).toFixed(2) + ' KB)',
+                        result.responseText
+                    );
+                    addMessage(`❌ **Error 500: Internal Server Error**\n\nSe ha abierto el diagnóstico detallado. Revisa el modal para más información.`, false);
+                } else {
+                    addMessage(`❌ **Error al procesar la imagen**\n\n${result.error}\n\n**Sugerencias:**\n\n1️⃣ Verifica que el workflow esté **publicado** en n8n\n2️⃣ Comprueba la URL del webhook en la configuración\n3️⃣ Presiona "Probar OCR" para diagnosticar\n4️⃣ Revisa la consola del navegador (F12) para más detalles`, false);
+                }
+                
+                updateConnectionStatus(false, 'Error OCR');
+            }
+            
+        } catch (error) {
+            removeTypingIndicator();
+            console.error('❌ Error inesperado en handleImageSubmit:', error);
+            addMessage(`❌ **Error inesperado:** ${error.message}\n\nRevisa la consola del navegador (F12) para más información.`, false);
+        } finally {
+            // Limpiar imagen seleccionada
+            selectedImage = null;
+            imageInput.value = '';
+            imagePreviewContainer.classList.add('hidden');
+            imagePreview.src = '';
+            attachImageBtn.classList.remove('bg-brand-100', 'text-brand-600');
+            attachImageBtn.classList.add('bg-gray-100', 'text-gray-600');
+            
+            // Limpiar input de mensaje
+            messageInput.value = '';
+            
+            // Rehabilitar controles
+            sendButton.disabled = false;
+            messageInput.disabled = false;
+            attachImageBtn.disabled = false;
+            messageInput.focus();
+            
+            // Mostrar opciones de continuación
+            setTimeout(() => {
+                mostrarOpcionesContinuacion();
+            }, 800);
+        }
+    }
 
     // =========================================================================
     // SISTEMA DE AGENDAMIENTO RÁPIDO
@@ -788,6 +1510,52 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('🆕 Nuevo chat iniciado con sessionId:', newSessionId);
         }
     });
+    
+    // =========================================================================
+    // FUNCIONES GLOBALES PARA MODAL DE DIAGNÓSTICO OCR
+    // =========================================================================
+    
+    window.mostrarModalDiagnostico = function(url, filename, responseText) {
+        const modal = document.getElementById('modal-diagnostico-ocr');
+        
+        // Rellenar información
+        document.getElementById('diag-url').textContent = url;
+        document.getElementById('diag-file').textContent = filename;
+        document.getElementById('diag-response').textContent = responseText.substring(0, 500);
+        
+        // Generar comando cURL
+        const curlCommand = `curl -X POST "${url}" \\
+  -F "Imagen=@/ruta/a/tu/imagen.jpg" \\
+  -v`;
+        document.getElementById('diag-curl').textContent = curlCommand;
+        
+        // Mostrar modal
+        modal.classList.remove('hidden');
+    };
+    
+    window.mostrarModalDiagnosticoVacio = function() {
+        const modal = document.getElementById('modal-diagnostico-ocr');
+        const url = ocrWebhookUrlInput.value.trim() || 'http://localhost:5678/webhook/TU-WEBHOOK-ID';
+        
+        // Rellenar información con valores por defecto
+        document.getElementById('diag-url').textContent = url;
+        document.getElementById('diag-file').textContent = 'imagen.jpg (ejemplo)';
+        document.getElementById('diag-response').textContent = 'Aún no se ha enviado ninguna imagen.\n\nEsta guía te ayudará a solucionar el Error 500 cuando lo encuentres.';
+        
+        // Generar comando cURL
+        const curlCommand = `curl -X POST "${url}" \\
+  -F "Imagen=@/ruta/a/tu/imagen.jpg" \\
+  -v`;
+        document.getElementById('diag-curl').textContent = curlCommand;
+        
+        // Mostrar modal
+        modal.classList.remove('hidden');
+    };
+    
+    window.cerrarModalDiagnostico = function() {
+        const modal = document.getElementById('modal-diagnostico-ocr');
+        modal.classList.add('hidden');
+    };
 
     messageInput.focus();
 });
