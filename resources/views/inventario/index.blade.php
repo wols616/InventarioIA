@@ -18,6 +18,39 @@
             </div>
         </div>
 
+        <!-- Barra de búsqueda y filtros -->
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <form method="GET" action="{{ route('inventario.index') }}" class="flex flex-wrap gap-3 items-end">
+                <div class="flex-1 min-w-48">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Buscar</label>
+                    <div class="relative">
+                        <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
+                               placeholder="Código, marca, modelo, descripción..."
+                               class="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:ring-brand-500 focus:border-brand-500">
+                        <svg class="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Stock</label>
+                    <select name="stock" class="py-2 px-3 text-sm border border-gray-300 rounded-md focus:ring-brand-500 focus:border-brand-500">
+                        <option value="">Todos</option>
+                        <option value="normal" {{ ($filters['stock'] ?? '') === 'normal' ? 'selected' : '' }}>Normal</option>
+                        <option value="bajo" {{ ($filters['stock'] ?? '') === 'bajo' ? 'selected' : '' }}>Bajo mínimo</option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium py-2 px-4 rounded-md transition">
+                        Filtrar
+                    </button>
+                    @if(array_filter($filters ?? []))
+                        <a href="{{ route('inventario.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium py-2 px-4 rounded-md transition">Limpiar</a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
@@ -39,8 +72,22 @@
                             {{ $i->activo ? ($i->activo->codigo . ' - ' . trim(($i->activo->marca ?? '') . ' ' . ($i->activo->modelo ?? ''))) : $i->id_activo }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $i->cantidad < ($i->cantidad_minima ?: 0) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
-                                {{ $i->cantidad }}
+                            @php
+                                $min = $i->cantidad_minima !== null ? $i->cantidad_minima : null;
+                                $cantidad = $i->cantidad ?: 0;
+                                $badgeClass = 'bg-green-100 text-green-800';
+                                if($min !== null && $min > 0){
+                                    if($cantidad < $min){
+                                        $badgeClass = 'bg-red-100 text-red-800';
+                                    } elseif (($cantidad - $min) <= 5){
+                                        $badgeClass = 'bg-yellow-100 text-yellow-800';
+                                    } else {
+                                        $badgeClass = 'bg-green-100 text-green-800';
+                                    }
+                                }
+                            @endphp
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $badgeClass }}">
+                                {{ $cantidad }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-900">{{ $i->descripcion ?: '-' }}</td>

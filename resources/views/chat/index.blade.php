@@ -17,7 +17,17 @@
                         <p class="text-brand-100 text-sm">Pregúntame sobre el inventario</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-4">
+                    <button 
+                        id="new-chat-btn"
+                        class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition duration-200 flex items-center space-x-2 text-sm font-medium backdrop-blur-sm"
+                        title="Iniciar nuevo chat"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span>Nuevo Chat</span>
+                    </button>
                     <div id="connection-status" class="flex items-center space-x-2">
                         <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
                         <span class="text-white text-sm">Desconectado</span>
@@ -103,6 +113,56 @@
             <!-- Las sugerencias se generarán dinámicamente según el contexto -->
         </div>
     </div>
+
+    <!-- Modal de Agendamiento -->
+    <div id="modal-agendar" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-900">📅 Agendar Reunión</h3>
+                <button onclick="cerrarModalAgendar()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="form-agendar" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                    <input type="date" id="input-fecha" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Hora</label>
+                    <input type="time" id="input-hora" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Motivo/Título</label>
+                    <input type="text" id="input-motivo" placeholder="Ej: Reunión de seguimiento" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Invitados (opcional)</label>
+                    <textarea id="input-invitados" rows="2" placeholder="correo1@ejemplo.com, correo2@ejemplo.com"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"></textarea>
+                    <p class="text-xs text-gray-500 mt-1">Separa múltiples correos con comas. Deja vacío para evento privado.</p>
+                </div>
+                
+                <div class="flex space-x-3 pt-2">
+                    <button type="submit" class="flex-1 px-4 py-2 bg-brand-600 text-white rounded-md hover:bg-brand-700 transition font-medium">
+                        Agendar
+                    </button>
+                    <button type="button" onclick="cerrarModalAgendar()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -148,12 +208,21 @@ document.addEventListener('DOMContentLoaded', function() {
         inicio: {
             mensaje: "¡Hola! 👋 Soy el **Gestor de Inventario de TechLogistics**.\n\n¿Qué te gustaría consultar hoy?",
             opciones: [
+                { texto: "� Agendar reunión rápida", accion: "agendar_reunion" },
                 { texto: "🔍 Buscar un activo específico", accion: "buscar_activo" },
                 { texto: "👤 Ver asignaciones de personas", accion: "ver_asignaciones" },
                 { texto: "📍 Consultar por ubicación", accion: "consultar_ubicacion" },
                 { texto: "🔧 Información de mantenimientos", accion: "ver_mantenimientos" },
                 { texto: "📊 Ver disponibilidad de activos", accion: "ver_disponibilidad" },
                 { texto: "💬 Hacer una pregunta libre", accion: "pregunta_libre" }
+            ]
+        },
+        
+        agendar_reunion: {
+            mensaje: "Voy a ayudarte a agendar una reunión. Por favor completa los datos:",
+            opciones: [
+                { texto: "📝 Llenar formulario de agendamiento", accion: "form_agendar" },
+                { texto: "⬅️ Volver al menú principal", accion: "inicio" }
             ]
         },
         
@@ -258,7 +327,10 @@ document.addEventListener('DOMContentLoaded', function() {
             button.textContent = opcion.texto;
             
             button.onclick = () => {
-                if (opcion.accion === 'input') {
+                if (opcion.accion === 'form_agendar') {
+                    // Abrir modal de agendamiento
+                    abrirModalAgendar();
+                } else if (opcion.accion === 'input') {
                     // Activar input con placeholder personalizado
                     activarInput(opcion.placeholder);
                 } else if (opcion.query) {
@@ -349,10 +421,14 @@ document.addEventListener('DOMContentLoaded', function() {
     function getSessionId() {
         let sessionId = localStorage.getItem('chat_session_id');
         if (!sessionId) {
-            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            sessionId = generateNewSessionId();
             localStorage.setItem('chat_session_id', sessionId);
         }
         return sessionId;
+    }
+
+    function generateNewSessionId() {
+        return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
 
     webhookUrlInput.addEventListener('change', function() {
@@ -597,6 +673,120 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const message = messageInput.value.trim();
         if (message) sendMessage(message);
+    });
+
+    // =========================================================================
+    // SISTEMA DE AGENDAMIENTO RÁPIDO
+    // =========================================================================
+
+    function abrirModalAgendar() {
+        const modal = document.getElementById('modal-agendar');
+        modal.classList.remove('hidden');
+        
+        // Establecer fecha mínima a hoy
+        const inputFecha = document.getElementById('input-fecha');
+        const hoy = new Date().toISOString().split('T')[0];
+        inputFecha.setAttribute('min', hoy);
+        inputFecha.value = hoy;
+        
+        // Establecer hora por defecto (hora actual + 1)
+        const inputHora = document.getElementById('input-hora');
+        const ahora = new Date();
+        ahora.setHours(ahora.getHours() + 1);
+        inputHora.value = ahora.toTimeString().substring(0, 5);
+    }
+
+    function cerrarModalAgendar() {
+        const modal = document.getElementById('modal-agendar');
+        modal.classList.add('hidden');
+        
+        // Limpiar formulario
+        document.getElementById('form-agendar').reset();
+    }
+
+    // Manejar submit del formulario de agendamiento
+    const formAgendar = document.getElementById('form-agendar');
+    
+    formAgendar.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Obtener valores del formulario
+        const fecha = document.getElementById('input-fecha').value;
+        const hora = document.getElementById('input-hora').value;
+        const motivo = document.getElementById('input-motivo').value;
+        const invitadosRaw = document.getElementById('input-invitados').value.trim();
+        
+        // Procesar múltiples invitados
+        let invitadosLista = [];
+        if (invitadosRaw) {
+            // Separar por comas, punto y coma, o saltos de línea
+            invitadosLista = invitadosRaw
+                .split(/[,;\n]+/)
+                .map(email => email.trim())
+                .filter(email => email.length > 0);
+            
+            // Validar formato de emails
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const emailsInvalidos = invitadosLista.filter(email => !emailRegex.test(email));
+            
+            if (emailsInvalidos.length > 0) {
+                alert(`Los siguientes correos no son válidos:\n${emailsInvalidos.join('\n')}`);
+                return;
+            }
+        }
+        
+        // Construir mensaje estructurado según el formato requerido
+        let mensajeEstructurado = '';
+        
+        if (invitadosLista.length > 0) {
+            // Caso 1: Reunión con invitados (uno o múltiples)
+            const invitadosStr = invitadosLista.join(', ');
+            mensajeEstructurado = `Comando: Agendar reunión. Fecha: ${fecha}. Hora: ${hora}. Motivo: ${motivo}. Invitar al correo: ${invitadosStr}.`;
+        } else {
+            // Caso 2: Bloqueo personal sin invitados
+            mensajeEstructurado = `Comando: Bloquear agenda. Fecha: ${fecha}. Hora: ${hora}. Motivo: ${motivo}. Nota: Evento privado sin invitados.`;
+        }
+        
+        // Cerrar modal
+        cerrarModalAgendar();
+        
+        // Mostrar confirmación visual al usuario
+        const fechaFormateada = new Date(fecha + 'T00:00:00').toLocaleDateString('es-ES', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        
+        const mensajeUsuario = invitadosLista.length > 0
+            ? `Agendar reunión: "${motivo}" para el ${fechaFormateada} a las ${hora}. Invitados (${invitadosLista.length}): ${invitadosLista.join(', ')}`
+            : `Bloquear agenda: "${motivo}" para el ${fechaFormateada} a las ${hora} (evento privado)`;
+        
+        addMessage(mensajeUsuario, true);
+        
+        // Enviar mensaje estructurado al bot
+        sendMessage(mensajeEstructurado);
+    });
+
+    // Botón de nuevo chat - limpiar conversación y reiniciar
+    document.getElementById('new-chat-btn').addEventListener('click', function() {
+        if (confirm('¿Deseas iniciar un nuevo chat? Se limpiará la conversación actual.')) {
+            // Limpiar mensajes
+            chatMessages.innerHTML = '';
+            
+            // Generar nuevo sessionId y guardarlo
+            const newSessionId = generateNewSessionId();
+            localStorage.setItem('chat_session_id', newSessionId);
+            
+            // Mostrar mensaje de bienvenida
+            mostrarOpciones('inicio');
+            
+            // Limpiar input
+            messageInput.value = '';
+            messageInput.focus();
+            
+            console.log('🆕 Nuevo chat iniciado con sessionId:', newSessionId);
+        }
     });
 
     messageInput.focus();

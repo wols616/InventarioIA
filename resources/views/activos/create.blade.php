@@ -50,11 +50,27 @@
                     </div>
 
                     <div>
-                        <label for="id_ubicacion_actual" class="block text-sm font-medium text-gray-700 mb-2">Ubicación Actual *</label>
+                        <label for="id_edificio_select" class="block text-sm font-medium text-gray-700 mb-2">Edificio</label>
+                        <select id="id_edificio_select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                            <option value="">-- Todos los Edificios --</option>
+                            @foreach($edificios as $ed)
+                                <option value="{{ $ed->id_edificio }}">{{ $ed->nombre }}</option>
+                            @endforeach
+                        </select>
+
+                        <label for="id_area_select" class="block text-sm font-medium text-gray-700 mb-2 mt-4">Área</label>
+                        <select id="id_area_select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                            <option value="">-- Todas las Áreas --</option>
+                            @foreach($areas as $area)
+                                <option value="{{ $area->id_area }}" data-edificio="{{ $area->piso ? $area->piso->id_edificio : '' }}">{{ $area->nombre }}</option>
+                            @endforeach
+                        </select>
+
+                        <label for="id_ubicacion_actual" class="block text-sm font-medium text-gray-700 mb-2 mt-4">Ubicación Actual *</label>
                         <select name="id_ubicacion_actual" id="id_ubicacion_actual" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                             <option value="">-- Seleccione Ubicacion --</option>
                             @foreach($ubicaciones as $ubic)
-                                <option value="{{ $ubic->id_ubicacion }}" {{ (old('id_ubicacion_actual') == $ubic->id_ubicacion) ? 'selected' : '' }}>{{ $ubic->area ? $ubic->area->nombre : $ubic->nombre }}</option>
+                                <option value="{{ $ubic->id_ubicacion }}" data-area="{{ $ubic->id_area }}" {{ (old('id_ubicacion_actual') == $ubic->id_ubicacion) ? 'selected' : '' }}>{{ $ubic->area ? $ubic->area->nombre . ' - ' . $ubic->nombre : $ubic->nombre }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -93,6 +109,18 @@
                         <label for="valor_adquisicion" class="block text-sm font-medium text-gray-700 mb-2">Valor de Adquisición</label>
                         <input type="number" step="0.01" name="valor_adquisicion" id="valor_adquisicion" value="{{ old('valor_adquisicion') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                     </div>
+
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="acumulable_checkbox" name="acumulable" value="1" {{ old('acumulable') ? 'checked' : '' }} class="h-4 w-4 text-brand-600 border-gray-300 rounded">
+                            <span class="text-sm font-medium text-gray-700">Acumulable (crear en Inventario)</span>
+                        </label>
+
+                        <div id="cantidad_container" class="mt-3" style="display: {{ old('acumulable') ? 'block' : 'none' }};">
+                            <label for="cantidad_inventario" class="block text-sm font-medium text-gray-700 mb-2">Cantidad a agregar</label>
+                            <input type="number" name="cantidad_inventario" id="cantidad_inventario" min="1" value="{{ old('cantidad_inventario', 1) }}" class="w-40 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
@@ -109,4 +137,110 @@
             </form>
         </div>
     </div>
-@endsection
+    <script>
+        (function(){
+            const areas = @json($areas);
+            const ubicaciones = @json($ubicaciones);
+            const edificioSelect = document.getElementById('id_edificio_select');
+            const areaSelect = document.getElementById('id_area_select');
+            const ubicSelect = document.getElementById('id_ubicacion_actual');
+
+            function populateAreas(edificioId){
+                const current = areaSelect.value;
+                areaSelect.innerHTML = '<option value="">-- Todas las Áreas --</option>';
+                areas.forEach(a => {
+                    const edificioOfArea = a.piso ? a.piso.id_edificio : null;
+                    if(!edificioId || String(edificioOfArea) === String(edificioId)){
+                        const opt = document.createElement('option');
+                        opt.value = a.id_area;
+                        opt.textContent = a.nombre;
+                        opt.dataset.edificio = edificioOfArea || '';
+                        areaSelect.appendChild(opt);
+                    }
+                });
+                if(current) areaSelect.value = current;
+            }
+
+            function populateUbicaciones(areaId){
+                const prev = ubicSelect.value;
+                ubicSelect.innerHTML = '<option value="">-- Seleccione Ubicacion --</option>';
+                ubicaciones.forEach(u => {
+                    if(!areaId || String(u.id_area) === String(areaId)){
+                        const opt = document.createElement('option');
+                        opt.value = u.id_ubicacion;
+                        opt.textContent = (u.area && u.area.nombre ? u.area.nombre + ' - ' : '') + u.nombre;
+                        opt.dataset.area = u.id_area;
+                        if(String(u.id_ubicacion) === String(prev)) opt.selected = true;
+                        ubicSelect.appendChild(opt);
+                    }
+                });
+            }
+
+            edificioSelect.addEventListener('change', function(e){
+                populateAreas(e.target.value);
+                populateUbicaciones('');
+            });
+
+            areaSelect.addEventListener('change', function(e){
+                populateUbicaciones(e.target.value);
+            });
+
+            // initialize selects based on old value if present
+            const oldUbic = @json(old('id_ubicacion_actual'));
+            if(oldUbic){
+                const selU = ubicaciones.find(u => String(u.id_ubicacion) === String(oldUbic));
+                const areaId = selU ? selU.id_area : null;
+                const areaObj = areas.find(a => String(a.id_area) === String(areaId));
+                const edificioId = areaObj && areaObj.piso ? areaObj.piso.id_edificio : null;
+                if(edificioId){
+                    edificioSelect.value = edificioId;
+                }
+                populateAreas(edificioId);
+                if(areaId) areaSelect.value = areaId;
+                populateUbicaciones(areaId);
+                if(oldUbic) ubicSelect.value = oldUbic;
+            } else {
+                // default populate all
+                populateAreas('');
+                populateUbicaciones('');
+            }
+
+            // acumulable toggle logic
+            const acumulableCheckbox = document.getElementById('acumulable_checkbox');
+            const cantidadContainer = document.getElementById('cantidad_container');
+            const cantidadInput = document.getElementById('cantidad_inventario');
+
+            function updateCantidadVisibility(){
+                if(acumulableCheckbox && cantidadContainer && cantidadInput){
+                    if(acumulableCheckbox.checked){
+                        cantidadContainer.style.display = 'block';
+                        if(!cantidadInput.value || Number(cantidadInput.value) < 1) cantidadInput.value = 1;
+                    } else {
+                        cantidadContainer.style.display = 'none';
+                        cantidadInput.value = 1;
+                    }
+                }
+            }
+
+            if(acumulableCheckbox){
+                acumulableCheckbox.addEventListener('change', updateCantidadVisibility);
+            }
+            // ensure correct state on load
+            updateCantidadVisibility();
+
+            // on submit ensure there's always a cantidad >=1
+            const form = document.querySelector('form[action="{{ route('activos.store') }}"]');
+            if(form){
+                form.addEventListener('submit', function(){
+                    if(acumulableCheckbox && cantidadInput){
+                        if(!acumulableCheckbox.checked){
+                            cantidadInput.value = 1;
+                        }
+                        if(!cantidadInput.value || Number(cantidadInput.value) < 1) cantidadInput.value = 1;
+                    }
+                });
+            }
+        })();
+    </script>
+
+    @endsection

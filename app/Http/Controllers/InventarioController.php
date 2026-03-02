@@ -5,17 +5,48 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Inventario;
 use App\Models\Activo;
+use App\Models\AsignacionActivo;
+use App\Models\MovimientoActivo;
 
 class InventarioController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $query = Inventario::with('activo');
-        if(request()->has('activo') && request('activo')){
-            $query->where('id_activo', request('activo'));
+
+        // Excluir inventarios cuyo activo está marcado como 'Eliminado' (id_estado = 9)
+        $query->whereDoesntHave('activo', function($q) {
+            $q->where('id_estado', 9);
+        });
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('activo', function($aq) use ($search) {
+                    $aq->where('codigo', 'ilike', "%{$search}%")
+                       ->orWhere('marca', 'ilike', "%{$search}%")
+                       ->orWhere('modelo', 'ilike', "%{$search}%");
+                })->orWhere('descripcion', 'ilike', "%{$search}%");
+            });
         }
-        $inventarios = $query->paginate(20);
-        return view('inventario.index', compact('inventarios'));
+
+        if ($request->filled('stock')) {
+            if ($request->stock === 'bajo') {
+                $query->whereColumn('cantidad', '<', 'cantidad_minima')->whereNotNull('cantidad_minima');
+            } elseif ($request->stock === 'normal') {
+                $query->where(function($q) {
+                    $q->whereColumn('cantidad', '>=', 'cantidad_minima')->orWhereNull('cantidad_minima');
+                });
+            }
+        }
+
+        if ($request->filled('activo')) {
+            $query->where('id_activo', $request->activo);
+        }
+
+        $inventarios = $query->paginate(20)->withQueryString();
+        $filters = $request->only(['search', 'stock', 'activo']);
+        return view('inventario.index', compact('inventarios', 'filters'));
     }
 
     public function create()
@@ -40,7 +71,22 @@ class InventarioController extends Controller
 
     public function show(Inventario $inventario)
     {
-        return view('inventario.show', compact('inventario'));
+        // Eager load related activo details
+        $inventario->load('activo.tipo', 'activo.estado', 'activo.ubicacion.area.piso.edificio');
+
+        // Todas las asignaciones para este activo
+        $asignaciones = AsignacionActivo::with('persona')
+            ->where('id_activo', $inventario->id_activo)
+            ->orderBy('fecha_asignacion', 'desc')
+            ->get();
+
+        // Movimientos de ubicación para este activo
+        $movimientos = MovimientoActivo::with(['ubicacionOrigen.area.piso.edificio', 'ubicacionDestino.area.piso.edificio'])
+            ->where('id_activo', $inventario->id_activo)
+            ->orderBy('fecha_movimiento', 'desc')
+            ->get();
+
+        return view('inventario.show', compact('inventario', 'asignaciones', 'movimientos'));
     }
 
     public function edit(Inventario $inventario)
