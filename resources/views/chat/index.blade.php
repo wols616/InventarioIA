@@ -1,175 +1,216 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-6xl mx-auto">
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-        <!-- Header del Chat -->
-        <div class="bg-gradient-to-r from-brand-600 to-brand-700 px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+<div class="max-w-5xl mx-auto px-4 py-6">
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        
+        <!-- ============================================================ -->
+        <!-- HEADER DEL CHAT -->
+        <!-- ============================================================ -->
+        <div class="relative bg-gradient-to-br from-brand-600 via-brand-700 to-brand-800 px-6 py-5">
+            <div class="absolute inset-0 opacity-10">
+                <svg class="w-full h-full" viewBox="0 0 400 120" preserveAspectRatio="none">
+                    <circle cx="50" cy="20" r="60" fill="white" opacity="0.1"/>
+                    <circle cx="350" cy="80" r="80" fill="white" opacity="0.08"/>
+                    <circle cx="200" cy="-20" r="40" fill="white" opacity="0.06"/>
+                </svg>
+            </div>
+            <div class="relative flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center ring-2 ring-white/30">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"></path>
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold text-white">Asistente IA</h1>
-                        <p class="text-brand-100 text-sm">Pregúntame sobre el inventario</p>
+                        <h1 class="text-xl font-bold text-white tracking-tight">Asistente IA</h1>
+                        <p class="text-brand-200 text-sm font-medium">Gestión inteligente de inventario</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center gap-3">
+                    <div id="connection-status" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm">
+                        <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                        <span class="text-white/80 text-xs font-medium">Desconectado</span>
+                    </div>
                     <button 
                         id="new-chat-btn"
-                        class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition duration-200 flex items-center space-x-2 text-sm font-medium backdrop-blur-sm"
+                        class="p-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl transition-all duration-200 backdrop-blur-sm group"
                         title="Iniciar nuevo chat"
                     >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
-                        <span>Nuevo Chat</span>
                     </button>
-                    
                     <button 
-                        id="btn-error-ocr"
-                        class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-white rounded-lg transition duration-200 flex items-center space-x-2 text-sm font-medium backdrop-blur-sm"
-                        title="¿Problemas con OCR? Click aquí"
-                        onclick="mostrarModalDiagnosticoVacio()"
+                        id="toggle-settings-btn"
+                        class="p-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl transition-all duration-200 backdrop-blur-sm group"
+                        title="Configuración"
                     >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        <svg class="w-5 h-5 group-hover:rotate-45 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
-                        <span>Error OCR</span>
                     </button>
-                    
-                    <div id="connection-status" class="flex items-center space-x-2">
-                        <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
-                        <span class="text-white text-sm">Desconectado</span>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Configuración del Webhook -->
-        <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
-            <div class="space-y-3">
-                <!-- Selector de Modo -->
-                <div class="flex items-center space-x-4">
-                    <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Modo:</label>
-                    <select id="bot-mode" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        <!-- ============================================================ -->
+        <!-- PANEL DE CONFIGURACIÓN (Colapsable) -->
+        <!-- ============================================================ -->
+        <div id="settings-panel" class="hidden border-b border-gray-100 bg-gradient-to-b from-gray-50 to-white transition-all duration-300">
+            <div class="px-6 py-5 space-y-4">
+                <!-- Modo -->
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 min-w-[80px]">
+                        <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.858 15.355-5.858 21.213 0"></path>
+                        </svg>
+                        <span class="text-sm font-semibold text-gray-600">Modo</span>
+                    </div>
+                    <select id="bot-mode" class="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all shadow-sm">
                         <option value="local">Bot Local (Prueba)</option>
                         <option value="n8n">n8n Webhook</option>
                     </select>
-                    <span class="text-xs text-gray-500">Usa "Bot Local" para probar sin n8n</span>
+                    <span class="text-xs text-gray-400 italic hidden sm:inline">Usa "Bot Local" para probar sin n8n</span>
                 </div>
                 
-                <!-- Configuración de Webhook Chat (solo visible en modo n8n) -->
-                <div id="webhook-config" class="hidden">
-                    <div class="flex items-center space-x-4">
-                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Chat URL:</label>
-                        <input 
-                            type="url" 
-                            id="webhook-url" 
-                            placeholder="http://localhost:5678/webhook-test/asistente"
-                            class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                            value=""
-                        >
-                        <button 
-                            id="test-connection" 
-                            class="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition duration-200"
-                        >
-                            Probar Conexión
-                        </button>
+                <!-- Chat URL (solo visible en modo n8n) -->
+                <div id="webhook-config" class="hidden space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2 min-w-[80px]">
+                            <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                            </svg>
+                            <span class="text-sm font-semibold text-gray-600">Chat</span>
+                        </div>
+                        <div class="flex-1 flex gap-2">
+                            <input 
+                                type="url" 
+                                id="webhook-url" 
+                                placeholder="http://localhost:5678/webhook-test/asistente"
+                                class="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all shadow-sm font-mono text-xs"
+                                value=""
+                            >
+                            <button 
+                                id="test-connection" 
+                                class="px-4 py-2 bg-emerald-500 text-white text-xs font-semibold rounded-xl hover:bg-emerald-600 transition-all duration-200 shadow-sm hover:shadow-md whitespace-nowrap"
+                            >
+                                Probar
+                            </button>
+                        </div>
                     </div>
-                    <div class="mt-2 text-xs text-gray-600">
-                        <strong>Formato:</strong> {"mensaje": "texto", "sessionId": "id"}
-                    </div>
+                    <p class="ml-[92px] text-xs text-gray-400">Formato: {"mensaje", "texto", "sessionId", "id"}</p>
                 </div>
                 
-                <!-- Configuración de Webhook OCR -->
-                <div class="border-t border-gray-200 pt-3">
-                    <div class="flex items-center space-x-4">
-                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">OCR URL:</label>
+                <!-- OCR URL -->
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 min-w-[80px]">
+                        <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <span class="text-sm font-semibold text-gray-600">OCR</span>
+                    </div>
+                    <div class="flex-1 flex gap-2">
                         <input 
                             type="url" 
                             id="ocr-webhook-url" 
                             placeholder="http://localhost:5678/webhook-test/analizar"
-                            class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                            class="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all shadow-sm font-mono text-xs"
                             value=""
                         >
                         <button 
                             id="test-ocr-connection" 
-                            class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition duration-200"
+                            class="px-4 py-2 bg-brand-500 text-white text-xs font-semibold rounded-xl hover:bg-brand-600 transition-all duration-200 shadow-sm hover:shadow-md whitespace-nowrap"
                         >
-                            Probar OCR
+                            Probar
                         </button>
                     </div>
-                    <div class="mt-2 text-xs text-gray-600">
-                        <strong>📋 Cómo obtener la URL:</strong> En n8n → Workflow "Imagenes" → Nodo Webhook → Copiar "Webhook URL"
-                    </div>
                 </div>
+                
+                <button 
+                    id="btn-error-ocr"
+                    class="ml-[92px] inline-flex items-center gap-1.5 text-xs text-amber-600 hover:text-amber-700 font-medium transition-colors"
+                    onclick="mostrarModalDiagnosticoVacio()"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    Diagnosticar problemas OCR
+                </button>
             </div>
         </div>
 
-        <!-- Chat Container -->
-        <div class="h-[500px] flex flex-col">
+        <!-- ============================================================ -->
+        <!-- CHAT CONTAINER -->
+        <!-- ============================================================ -->
+        <div class="h-[560px] flex flex-col">
             <!-- Mensajes -->
-            <div id="chat-messages" class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            <div id="chat-messages" class="flex-1 overflow-y-auto px-6 py-5 space-y-5 bg-gradient-to-b from-gray-50/50 to-white">
                 <!-- Los mensajes se agregarán dinámicamente -->
             </div>
 
-            <!-- Input de Mensaje -->
-            <div class="border-t border-gray-200 px-6 py-4 bg-white">
+            <!-- ============================================================ -->
+            <!-- INPUT AREA -->
+            <!-- ============================================================ -->
+            <div class="border-t border-gray-100 px-5 py-4 bg-white">
                 <!-- Vista previa de imagen -->
-                <div id="image-preview-container" class="hidden mb-3 relative inline-block">
-                    <img id="image-preview" src="" alt="Vista previa" class="max-h-32 rounded-lg border-2 border-brand-300">
-                    <button 
-                        type="button" 
-                        id="remove-image-btn"
-                        class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 transition flex items-center justify-center"
-                        title="Eliminar imagen"
-                    >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
+                <div id="image-preview-container" class="hidden mb-3">
+                    <div class="inline-flex items-center gap-3 bg-brand-50 border border-brand-200 rounded-xl px-4 py-2.5 animate-fade-in">
+                        <img id="image-preview" src="" alt="Vista previa" class="h-14 w-14 object-cover rounded-lg ring-2 ring-brand-300 shadow-sm">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-semibold text-brand-700">Imagen lista para OCR</span>
+                            <span id="image-file-name" class="text-xs text-brand-500 truncate max-w-[200px]"></span>
+                        </div>
+                        <button 
+                            type="button" 
+                            id="remove-image-btn"
+                            class="ml-2 w-7 h-7 bg-red-100 text-red-500 rounded-lg hover:bg-red-200 hover:text-red-600 transition-all flex items-center justify-center"
+                            title="Eliminar imagen"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 
-                <form id="chat-form" class="flex space-x-4">
+                <form id="chat-form" class="flex items-end gap-3">
                     <!-- Input file oculto -->
-                    <input 
-                        type="file" 
-                        id="image-input" 
-                        accept="image/*"
-                        class="hidden"
-                    >
+                    <input type="file" id="image-input" accept="image/*" class="hidden">
                     
                     <!-- Botón para adjuntar imagen -->
                     <button 
                         type="button" 
                         id="attach-image-btn"
-                        class="px-3 py-3 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition duration-200 flex items-center space-x-2"
+                        class="flex-shrink-0 w-11 h-11 bg-gray-50 text-gray-400 rounded-xl hover:bg-brand-50 hover:text-brand-500 transition-all duration-200 flex items-center justify-center border border-gray-200 hover:border-brand-300 group"
                         title="Adjuntar imagen para análisis OCR"
                     >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
                     </button>
                     
-                    <input 
-                        type="text" 
-                        id="message-input" 
-                        placeholder="Escribe tu mensaje aquí..."
-                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                        autocomplete="off"
-                    >
+                    <!-- Input de texto -->
+                    <div class="flex-1 relative">
+                        <input 
+                            type="text" 
+                            id="message-input" 
+                            placeholder="Escribe tu mensaje aquí..."
+                            class="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent focus:bg-white transition-all duration-200 text-sm placeholder-gray-400"
+                            autocomplete="off"
+                        >
+                    </div>
+                    
+                    <!-- Botón enviar -->
                     <button 
                         type="submit" 
                         id="send-button"
-                        class="px-6 py-3 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="flex-shrink-0 w-11 h-11 bg-brand-600 text-white rounded-xl hover:bg-brand-700 active:scale-95 transition-all duration-200 flex items-center justify-center shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100"
                     >
-                        <span>Enviar</span>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"></path>
                         </svg>
                     </button>
                 </form>
@@ -177,27 +218,41 @@
         </div>
     </div>
 
-    <!-- Sugerencias contextuales dinámicas -->
-    <div id="suggestions-container" class="mt-6 bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-semibold text-gray-700 mb-3" id="suggestions-title">💡 ¿Qué te gustaría consultar?</h3>
-        <div id="suggestions-wrapper" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+    <!-- ============================================================ -->
+    <!-- SUGERENCIAS CONTEXTUALES -->
+    <!-- ============================================================ -->
+    <div id="suggestions-container" class="mt-5 bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+        <!-- Header del panel de sugerencias -->
+        <div id="suggestions-header" class="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+            <div class="flex items-center gap-2">
+                <div id="suggestions-icon" class="w-7 h-7 bg-brand-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-sm font-bold text-gray-700" id="suggestions-title">¿Qué te gustaría consultar?</h3>
+            </div>
+            <span id="suggestions-breadcrumb" class="text-xs text-gray-400 hidden"></span>
+        </div>
+        <!-- Grid de opciones -->
+        <div id="suggestions-wrapper" class="p-4">
             <!-- Las sugerencias se generarán dinámicamente según el contexto -->
         </div>
     </div>
 
     <!-- Modal de Diagnóstico OCR -->
-    <div id="modal-diagnostico-ocr" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div class="sticky top-0 bg-red-600 px-6 py-4 rounded-t-lg">
+    <div id="modal-diagnostico-ocr" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-100">
+            <div class="sticky top-0 bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 rounded-t-2xl">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
                         Error 500: Internal Server Error
                     </h3>
-                    <button onclick="cerrarModalDiagnostico()" class="text-white hover:text-gray-200">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button onclick="cerrarModalDiagnostico()" class="text-white/80 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
@@ -313,12 +368,15 @@
     </div>
 
     <!-- Modal de Agendamiento -->
-    <div id="modal-agendar" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold text-gray-900">📅 Agendar Reunión</h3>
-                <button onclick="cerrarModalAgendar()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div id="modal-agendar" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <span class="w-8 h-8 bg-brand-100 rounded-lg flex items-center justify-center">📅</span>
+                    Agendar Reunión
+                </h3>
+                <button onclick="cerrarModalAgendar()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
@@ -326,35 +384,35 @@
             
             <form id="form-agendar" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Fecha</label>
                     <input type="date" id="input-fecha" required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all text-sm">
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Hora</label>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Hora</label>
                     <input type="time" id="input-hora" required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all text-sm">
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Motivo/Título</label>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Motivo / Título</label>
                     <input type="text" id="input-motivo" placeholder="Ej: Reunión de seguimiento" required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all text-sm">
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Invitados (opcional)</label>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Invitados (opcional)</label>
                     <textarea id="input-invitados" rows="2" placeholder="correo1@ejemplo.com, correo2@ejemplo.com"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"></textarea>
-                    <p class="text-xs text-gray-500 mt-1">Separa múltiples correos con comas. Deja vacío para evento privado.</p>
+                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all text-sm resize-none"></textarea>
+                    <p class="text-xs text-gray-400 mt-1">Separa correos con comas. Deja vacío para evento privado.</p>
                 </div>
                 
-                <div class="flex space-x-3 pt-2">
-                    <button type="submit" class="flex-1 px-4 py-2 bg-brand-600 text-white rounded-md hover:bg-brand-700 transition font-medium">
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="flex-1 px-5 py-2.5 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-all font-semibold text-sm shadow-md hover:shadow-lg">
                         Agendar
                     </button>
-                    <button type="button" onclick="cerrarModalAgendar()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">
+                    <button type="button" onclick="cerrarModalAgendar()" class="px-5 py-2.5 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-all text-sm font-medium">
                         Cancelar
                     </button>
                 </div>
@@ -364,17 +422,79 @@
 </div>
 
 <style>
-    #chat-messages::-webkit-scrollbar {width: 6px;}
-    #chat-messages::-webkit-scrollbar-track {background: #f1f1f1;}
-    #chat-messages::-webkit-scrollbar-thumb {background: #cbd5e0; border-radius: 3px;}
-    #chat-messages::-webkit-scrollbar-thumb:hover {background: #a0aec0;}
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-5px); }
+    /* Scrollbar personalizada */
+    #chat-messages::-webkit-scrollbar { width: 5px; }
+    #chat-messages::-webkit-scrollbar-track { background: transparent; }
+    #chat-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    #chat-messages::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* Animación de typing */
+    @keyframes typingBounce {
+        0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+        30% { transform: translateY(-6px); opacity: 1; }
     }
-    .typing-indicator span {animation: bounce 1.4s infinite;}
-    .typing-indicator span:nth-child(2) {animation-delay: 0.2s;}
-    .typing-indicator span:nth-child(3) {animation-delay: 0.4s;}
+    .typing-indicator span {
+        animation: typingBounce 1.4s infinite;
+        display: inline-block;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
+
+    /* Animación de entrada para mensajes */
+    @keyframes messageSlideIn {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .message-animate {
+        animation: messageSlideIn 0.3s ease-out forwards;
+    }
+
+    /* Animación fade in */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.25s ease-out forwards;
+    }
+
+    /* Burbuja de chat del bot */
+    .chat-bubble-bot {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px 16px 16px 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    
+    /* Burbuja de chat del usuario */
+    .chat-bubble-user {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        border-radius: 16px 4px 16px 16px;
+        box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+    }
+
+    /* Hover en sugerencias */
+    .suggestion-btn {
+        transition: all 0.2s ease;
+    }
+    .suggestion-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(37,99,235,0.12);
+    }
+
+    /* Efecto de pulso suave para status */
+    @keyframes softPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    .status-pulse {
+        animation: softPulse 2s ease-in-out infinite;
+    }
+
+    /* Efecto shimmer para el panel de settings */
+    .settings-panel-enter {
+        animation: fadeIn 0.2s ease-out forwards;
+    }
 </style>
 
 <script>
@@ -407,6 +527,17 @@ document.addEventListener('DOMContentLoaded', function() {
     ocrWebhookUrlInput.value = savedOcrWebhookUrl;
     botModeSelect.value = savedBotMode;
 
+    // Toggle del panel de configuración
+    const toggleSettingsBtn = document.getElementById('toggle-settings-btn');
+    const settingsPanel = document.getElementById('settings-panel');
+    
+    toggleSettingsBtn.addEventListener('click', function() {
+        settingsPanel.classList.toggle('hidden');
+        if (!settingsPanel.classList.contains('hidden')) {
+            settingsPanel.classList.add('settings-panel-enter');
+        }
+    });
+
     // =========================================================================
     // SISTEMA DE MENÚ CONTEXTUAL PROACTIVO
     // =========================================================================
@@ -418,153 +549,212 @@ document.addEventListener('DOMContentLoaded', function() {
         inicio: {
             mensaje: "¡Hola! 👋 Soy el **Gestor de Inventario de TechLogistics**.\n\n¿Qué te gustaría consultar hoy?",
             opciones: [
-                { texto: "� Agendar reunión rápida", accion: "agendar_reunion" },
-                { texto: "🔍 Buscar un activo específico", accion: "buscar_activo" },
-                { texto: "👤 Ver asignaciones de personas", accion: "ver_asignaciones" },
-                { texto: "📍 Consultar por ubicación", accion: "consultar_ubicacion" },
-                { texto: "🔧 Información de mantenimientos", accion: "ver_mantenimientos" },
-                { texto: "📊 Ver disponibilidad de activos", accion: "ver_disponibilidad" },
-                { texto: "💬 Hacer una pregunta libre", accion: "pregunta_libre" }
+                { emoji: "📅", texto: "Agendar reunión",        desc: "Programa una cita rápidamente",          accion: "agendar_reunion",   color: "violet" },
+                { emoji: "🔍", texto: "Buscar activo",           desc: "Por código, marca o número de serie",   accion: "buscar_activo",     color: "blue" },
+                { emoji: "👤", texto: "Asignaciones",           desc: "Ver activos asignados a personas",      accion: "ver_asignaciones",  color: "cyan" },
+                { emoji: "📍", texto: "Ubicaciones",            desc: "Consulta por edificio, piso o área",   accion: "consultar_ubicacion", color: "teal" },
+                { emoji: "🔧", texto: "Mantenimientos",         desc: "Pendientes, historial y seguimiento",  accion: "ver_mantenimientos", color: "amber" },
+                { emoji: "📊", texto: "Disponibilidad",         desc: "Stock libre, ocupado o no disponible", accion: "ver_disponibilidad", color: "green" },
+                { emoji: "💬", texto: "Pregunta libre",          desc: "Escribe cualquier consulta",           accion: "pregunta_libre",    color: "gray" }
             ]
         },
         
         agendar_reunion: {
             mensaje: "Voy a ayudarte a agendar una reunión. Por favor completa los datos:",
             opciones: [
-                { texto: "📝 Llenar formulario de agendamiento", accion: "form_agendar" },
-                { texto: "⬅️ Volver al menú principal", accion: "inicio" }
+                { emoji: "📝", texto: "Llenar formulario",       desc: "Abrir el formulario de agendamiento",  accion: "form_agendar" },
+                { emoji: "⬅️", texto: "Volver al inicio",        desc: "Regresar al menú principal",           accion: "inicio",  esVolver: true }
             ]
         },
         
         buscar_activo: {
             mensaje: "Perfecto, puedo ayudarte a buscar un activo. ¿Qué información tienes?",
             opciones: [
-                { texto: "📟 Tengo el código del activo (ej: ACT-001)", accion: "input", placeholder: "Escribe el código del activo (ej: ACT-001)..." },
-                { texto: "🏷️ Sé la marca o modelo (ej: Dell, MacBook)", accion: "input", placeholder: "Escribe la marca o modelo..." },
-                { texto: "🔢 Tengo el número de serie", accion: "input", placeholder: "Escribe el número de serie..." },
-                { texto: "⬅️ Volver al menú principal", accion: "inicio" }
+                { emoji: "📟", texto: "Código del activo",       desc: "Ej: ACT-001, ACT-023",                 accion: "input", placeholder: "Escribe el código del activo (ej: ACT-001)..." },
+                { emoji: "🏷️", texto: "Marca o modelo",          desc: "Ej: Dell, MacBook, HP",                accion: "input", placeholder: "Escribe la marca o modelo..." },
+                { emoji: "🔢", texto: "Número de serie",         desc: "Código único del fabricante",          accion: "input", placeholder: "Escribe el número de serie..." },
+                { emoji: "⬅️", texto: "Volver al inicio",        desc: "Regresar al menú principal",           accion: "inicio",  esVolver: true }
             ]
         },
         
         ver_asignaciones: {
             mensaje: "¿De quién quieres ver las asignaciones de activos?",
             opciones: [
-                { texto: "👤 Buscar por nombre de persona", accion: "input", placeholder: "Escribe el nombre de la persona..." },
-                { texto: "🏢 Ver por departamento", accion: "departamentos" },
-                { texto: "📋 Ver todas las asignaciones activas", query: "Muéstrame todas las asignaciones activas de activos" },
-                { texto: "⬅️ Volver al menú principal", accion: "inicio" }
+                { emoji: "👤", texto: "Por nombre de persona",   desc: "Buscar activos de un empleado",        accion: "input", placeholder: "Escribe el nombre de la persona..." },
+                { emoji: "🏢", texto: "Por departamento",        desc: "Ver activos de un área completa",      accion: "departamentos" },
+                { emoji: "📋", texto: "Todas las asignaciones",  desc: "Listado completo de activos activos",  query: "Muéstrame todas las asignaciones activas de activos" },
+                { emoji: "⬅️", texto: "Volver al inicio",        desc: "Regresar al menú principal",           accion: "inicio",  esVolver: true }
             ]
         },
         
         consultar_ubicacion: {
             mensaje: "¿Qué ubicación te interesa consultar?",
             opciones: [
-                { texto: "🏢 Edificio A", query: "¿Qué activos hay en el Edificio A?" },
-                { texto: "🏢 Edificio B", query: "¿Qué activos hay en el Edificio B?" },
-                { texto: "📍 Buscar por piso o área específica", accion: "input", placeholder: "Escribe el piso o área (ej: Piso 2, Laboratorio 101)..." },
-                { texto: "🗺️ Ver activos sin ubicación", query: "Muéstrame los activos sin ubicación asignada" },
-                { texto: "⬅️ Volver al menú principal", accion: "inicio" }
+                { emoji: "🏢", texto: "Edificio A",              desc: "Ver todos los activos del Edificio A", query: "¿Qué activos hay en el Edificio A?" },
+                { emoji: "🏢", texto: "Edificio B",              desc: "Ver todos los activos del Edificio B", query: "¿Qué activos hay en el Edificio B?" },
+                { emoji: "📍", texto: "Piso o área específica",  desc: "Ej: Piso 2, Laboratorio 101",          accion: "input", placeholder: "Escribe el piso o área (ej: Piso 2, Laboratorio 101)..." },
+                { emoji: "🗺️", texto: "Sin ubicación",           desc: "Activos sin lugar asignado",           query: "Muéstrame los activos sin ubicación asignada" },
+                { emoji: "⬅️", texto: "Volver al inicio",        desc: "Regresar al menú principal",           accion: "inicio",  esVolver: true }
             ]
         },
         
         ver_mantenimientos: {
             mensaje: "¿Qué información de mantenimiento necesitas?",
             opciones: [
-                { texto: "⚠️ Activos con mantenimiento pendiente", query: "¿Qué activos necesitan mantenimiento próximamente?" },
-                { texto: "🔧 Últimos mantenimientos realizados", query: "Muéstrame los últimos mantenimientos realizados" },
-                { texto: "🔍 Buscar mantenimiento de un activo", accion: "input", placeholder: "Escribe el código del activo..." },
-                { texto: "📅 Historial de mantenimientos", query: "Dame un resumen del historial de mantenimientos" },
-                { texto: "⬅️ Volver al menú principal", accion: "inicio" }
+                { emoji: "⚠️", texto: "Pendientes",              desc: "Activos que necesitan atención pronto", query: "¿Qué activos necesitan mantenimiento próximamente?" },
+                { emoji: "🔧", texto: "Últimos realizados",       desc: "Historial reciente de intervenciones",  query: "Muéstrame los últimos mantenimientos realizados" },
+                { emoji: "🔍", texto: "Buscar por activo",        desc: "Historial de un equipo específico",    accion: "input", placeholder: "Escribe el código del activo..." },
+                { emoji: "📅", texto: "Historial completo",       desc: "Resumen general de mantenimientos",    query: "Dame un resumen del historial de mantenimientos" },
+                { emoji: "⬅️", texto: "Volver al inicio",        desc: "Regresar al menú principal",           accion: "inicio",  esVolver: true }
             ]
         },
         
         ver_disponibilidad: {
             mensaje: "¿Qué tipo de activos necesitas ver?",
             opciones: [
-                { texto: "✅ Activos disponibles en stock", query: "¿Qué activos están disponibles en stock?" },
-                { texto: "🔴 Activos ocupados actualmente", query: "Muéstrame los activos ocupados" },
-                { texto: "⚠️ Activos no disponibles", query: "¿Qué activos están marcados como no disponibles?" },
-                { texto: "📊 Resumen general de disponibilidad", query: "Dame un resumen de la disponibilidad de todos los activos" },
-                { texto: "⬅️ Volver al menú principal", accion: "inicio" }
+                { emoji: "✅", texto: "Disponibles",             desc: "Activos libres listos para asignar",   query: "¿Qué activos están disponibles en stock?" },
+                { emoji: "🔴", texto: "Ocupados",               desc: "Activos asignados a personas o áreas", query: "Muéstrame los activos ocupados" },
+                { emoji: "⛔", texto: "No disponibles",          desc: "En reparación, baja o similar",        query: "¿Qué activos están marcados como no disponibles?" },
+                { emoji: "📊", texto: "Resumen general",         desc: "Vista completa del inventario",        query: "Dame un resumen de la disponibilidad de todos los activos" },
+                { emoji: "⬅️", texto: "Volver al inicio",        desc: "Regresar al menú principal",           accion: "inicio",  esVolver: true }
             ]
         },
         
         departamentos: {
             mensaje: "Selecciona el departamento que quieres consultar:",
             opciones: [
-                { texto: "💻 Tecnología", query: "Muéstrame los activos asignados al departamento de Tecnología" },
-                { texto: "📊 Administración", query: "Muéstrame los activos asignados al departamento de Administración" },
-                { texto: "🔬 Laboratorio", query: "Muéstrame los activos asignados al departamento de Laboratorio" },
-                { texto: "👥 Recursos Humanos", query: "Muéstrame los activos asignados a Recursos Humanos" },
-                { texto: "⬅️ Volver", accion: "ver_asignaciones" }
+                { emoji: "💻", texto: "Tecnología",              desc: "Equipos del área de TI",               query: "Muéstrame los activos asignados al departamento de Tecnología" },
+                { emoji: "📊", texto: "Administración",          desc: "Equipos del área administrativa",      query: "Muéstrame los activos asignados al departamento de Administración" },
+                { emoji: "🔬", texto: "Laboratorio",             desc: "Equipos del área de laboratorio",      query: "Muéstrame los activos asignados al departamento de Laboratorio" },
+                { emoji: "👥", texto: "Recursos Humanos",        desc: "Equipos del área de RRHH",             query: "Muéstrame los activos asignados a Recursos Humanos" },
+                { emoji: "⬅️", texto: "Volver",                  desc: "Regresar a asignaciones",              accion: "ver_asignaciones", esVolver: true }
             ]
         },
         
         pregunta_libre: {
             mensaje: "¡Perfecto! Escribe tu pregunta libremente y haré mi mejor esfuerzo por ayudarte. 😊\n\nPuedes preguntarme sobre activos, ubicaciones, personas, mantenimientos, etc.",
             opciones: [
-                { texto: "💡 Ver ejemplos de preguntas", accion: "ejemplos_preguntas" },
-                { texto: "⬅️ Volver al menú principal", accion: "inicio" }
+                { emoji: "💡", texto: "Ver ejemplos",             desc: "Inspirate con preguntas de ejemplo",    accion: "ejemplos_preguntas" },
+                { emoji: "⬅️", texto: "Volver al inicio",         desc: "Regresar al menú principal",           accion: "inicio", esVolver: true }
             ]
         },
         
         ejemplos_preguntas: {
             mensaje: "Aquí hay algunos ejemplos de preguntas que puedes hacerme:",
             opciones: [
-                { texto: "¿Quién tiene el ACT-003?", query: "¿Quién tiene el ACT-003?" },
-                { texto: "¿Cuándo fue el último mantenimiento del laptop Dell?", query: "¿Cuándo fue el último mantenimiento del laptop Dell?" },
-                { texto: "¿Cuántos activos tiene Roberto?", query: "¿Cuántos activos tiene Roberto?" },
-                { texto: "Equipos en el Piso 2", query: "¿Qué equipos hay en el Piso 2?" },
-                { texto: "⬅️ Volver", accion: "pregunta_libre" }
+                { emoji: "❓", texto: "¿Quién tiene el ACT-003?",                          desc: "Consulta el responsable de un activo",  query: "¿Quién tiene el ACT-003?" },
+                { emoji: "❓", texto: "Último mantenimiento del laptop Dell",              desc: "Historial de un equipo específico",     query: "¿Cuándo fue el último mantenimiento del laptop Dell?" },
+                { emoji: "❓", texto: "¿Cuántos activos tiene Roberto?",                  desc: "Inventario asignado a una persona",     query: "¿Cuántos activos tiene Roberto?" },
+                { emoji: "❓", texto: "Equipos en el Piso 2",                             desc: "Activos de una ubicación concreta",     query: "¿Qué equipos hay en el Piso 2?" },
+                { emoji: "⬅️", texto: "Volver",                                           desc: "Regresar a pregunta libre",             accion: "pregunta_libre", esVolver: true }
             ]
         }
     };
     
+    // Mapa de colores por categoría
+    const colorMap = {
+        violet: { bg: 'bg-violet-50',  border: 'border-violet-200',  icon: 'bg-violet-100 text-violet-600',  hover: 'hover:border-violet-400 hover:bg-violet-50' },
+        blue:   { bg: 'bg-blue-50',    border: 'border-blue-200',    icon: 'bg-blue-100 text-blue-600',      hover: 'hover:border-blue-400 hover:bg-blue-50' },
+        cyan:   { bg: 'bg-cyan-50',    border: 'border-cyan-200',    icon: 'bg-cyan-100 text-cyan-600',      hover: 'hover:border-cyan-400 hover:bg-cyan-50' },
+        teal:   { bg: 'bg-teal-50',    border: 'border-teal-200',    icon: 'bg-teal-100 text-teal-600',      hover: 'hover:border-teal-400 hover:bg-teal-50' },
+        amber:  { bg: 'bg-amber-50',   border: 'border-amber-200',   icon: 'bg-amber-100 text-amber-600',    hover: 'hover:border-amber-400 hover:bg-amber-50' },
+        green:  { bg: 'bg-emerald-50', border: 'border-emerald-200', icon: 'bg-emerald-100 text-emerald-600',hover: 'hover:border-emerald-400 hover:bg-emerald-50' },
+        gray:   { bg: 'bg-gray-50',    border: 'border-gray-200',    icon: 'bg-gray-100 text-gray-500',      hover: 'hover:border-gray-400 hover:bg-gray-50' }
+    };
+
     function mostrarOpciones(categoria) {
         contextoActual = categoria;
         const config = consultasCategorias[categoria];
         const suggestionsWrapper = document.getElementById('suggestions-wrapper');
         const suggestionsTitle = document.getElementById('suggestions-title');
+        const breadcrumb = document.getElementById('suggestions-breadcrumb');
         
-        // Actualizar título
-        suggestionsTitle.textContent = categoria === 'inicio' ? '💡 ¿Qué te gustaría consultar?' : '💡 Opciones disponibles:';
+        // Actualizar título y breadcrumb
+        if (categoria === 'inicio') {
+            suggestionsTitle.textContent = '¿Qué te gustaría consultar?';
+            breadcrumb.classList.add('hidden');
+        } else {
+            const titulos = {
+                buscar_activo: 'Buscar activo', ver_asignaciones: 'Asignaciones',
+                consultar_ubicacion: 'Ubicaciones', ver_mantenimientos: 'Mantenimientos',
+                ver_disponibilidad: 'Disponibilidad', departamentos: 'Departamentos',
+                agendar_reunion: 'Agendar reunión', pregunta_libre: 'Pregunta libre',
+                ejemplos_preguntas: 'Ejemplos'
+            };
+            suggestionsTitle.textContent = titulos[categoria] || 'Opciones';
+            breadcrumb.textContent = 'Inicio → ' + (titulos[categoria] || categoria);
+            breadcrumb.classList.remove('hidden');
+        }
         
         suggestionsWrapper.innerHTML = '';
-        
-        config.opciones.forEach(opcion => {
+
+        // Usar grid de 2 o 3 columnas según cantidad de opciones
+        const opcionesNormales = config.opciones.filter(o => !o.esVolver);
+        const opcionVolver   = config.opciones.find(o => o.esVolver);
+
+        const gridCols = categoria === 'inicio' ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2';
+        const grid = document.createElement('div');
+        grid.className = `grid ${gridCols} gap-3`;
+
+        opcionesNormales.forEach((opcion, index) => {
+            const colors = colorMap[opcion.color] || colorMap.gray;
             const button = document.createElement('button');
-            button.className = 'text-left px-4 py-3 bg-gradient-to-r from-brand-50 to-white hover:from-brand-100 hover:to-brand-50 border-2 border-brand-200 hover:border-brand-400 rounded-lg transition-all duration-200 text-sm font-medium text-gray-700 hover:text-brand-700 shadow-sm hover:shadow-md transform hover:-translate-y-0.5';
-            button.textContent = opcion.texto;
-            
-            button.onclick = () => {
-                if (opcion.accion === 'form_agendar') {
-                    // Abrir modal de agendamiento
-                    abrirModalAgendar();
-                } else if (opcion.accion === 'input') {
-                    // Activar input con placeholder personalizado
-                    activarInput(opcion.placeholder);
-                } else if (opcion.query) {
-                    // Enviar query predefinida
-                    enviarMensajeContextual(opcion.query);
-                } else if (opcion.accion) {
-                    // Cambiar a otra categoría
-                    const nuevoConfig = consultasCategorias[opcion.accion];
-                    addMessage(nuevoConfig.mensaje, false);
-                    setTimeout(() => mostrarOpciones(opcion.accion), 300);
-                }
-            };
-            
-            suggestionsWrapper.appendChild(button);
+            button.className = `suggestion-btn group text-left p-4 bg-white border ${colors.border} ${colors.hover} rounded-2xl transition-all duration-200 flex flex-col gap-2`;
+            button.style.animationDelay = (index * 0.05) + 's';
+            button.classList.add('animate-fade-in');
+            button.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <span class="text-2xl leading-none flex-shrink-0" aria-hidden="true">${opcion.emoji}</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-800 group-hover:text-gray-900 leading-tight">${opcion.texto}</p>
+                        ${opcion.desc ? `<p class="text-xs text-gray-400 mt-0.5 leading-tight">${opcion.desc}</p>` : ''}
+                    </div>
+                    <svg class="w-4 h-4 text-gray-300 group-hover:text-gray-500 flex-shrink-0 mt-0.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+            `;
+            button.onclick = () => handleOpcionClick(opcion);
+            grid.appendChild(button);
         });
+
+        suggestionsWrapper.appendChild(grid);
+
+        // Botón de volver separado, estilo discreto
+        if (opcionVolver) {
+            const backBtn = document.createElement('button');
+            backBtn.className = 'suggestion-btn mt-3 w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-xl border border-transparent hover:border-brand-200 transition-all duration-200';
+            backBtn.innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <span>${opcionVolver.texto}</span>
+                <span class="text-xs text-gray-300">${opcionVolver.desc || ''}</span>
+            `;
+            backBtn.onclick = () => handleOpcionClick(opcionVolver);
+            suggestionsWrapper.appendChild(backBtn);
+        }
+    }
+
+    function handleOpcionClick(opcion) {
+        if (opcion.accion === 'form_agendar') {
+            abrirModalAgendar();
+        } else if (opcion.accion === 'input') {
+            activarInput(opcion.placeholder);
+        } else if (opcion.query) {
+            enviarMensajeContextual(opcion.query);
+        } else if (opcion.accion) {
+            const nuevoConfig = consultasCategorias[opcion.accion];
+            if (nuevoConfig) {
+                addMessage(nuevoConfig.mensaje, false);
+                setTimeout(() => mostrarOpciones(opcion.accion), 300);
+            }
+        }
     }
     
     function activarInput(placeholder) {
         messageInput.placeholder = placeholder;
         messageInput.focus();
-        messageInput.classList.add('ring-2', 'ring-brand-500', 'border-brand-500');
+        messageInput.classList.add('ring-2', 'ring-brand-400', 'border-brand-400', 'bg-white');
         
         setTimeout(() => {
-            messageInput.classList.remove('ring-2', 'ring-brand-500', 'border-brand-500');
+            messageInput.classList.remove('ring-2', 'ring-brand-400', 'border-brand-400');
             messageInput.placeholder = 'Escribe tu mensaje aquí...';
         }, 5000);
     }
@@ -577,21 +767,34 @@ document.addEventListener('DOMContentLoaded', function() {
     function mostrarOpcionesContinuacion() {
         const suggestionsWrapper = document.getElementById('suggestions-wrapper');
         const suggestionsTitle = document.getElementById('suggestions-title');
+        const breadcrumb = document.getElementById('suggestions-breadcrumb');
         
-        suggestionsTitle.textContent = '💬 ¿Necesitas algo más?';
+        suggestionsTitle.textContent = '¿Qué deseas hacer ahora?';
+        breadcrumb.classList.add('hidden');
         suggestionsWrapper.innerHTML = '';
         
         const opciones = [
-            { texto: "🔄 Hacer otra consulta similar", accion: contextoActual },
-            { texto: "🏠 Volver al menú principal", accion: "inicio" },
-            { texto: "✍️ Escribir pregunta personalizada", accion: "input", placeholder: "Escribe tu pregunta..." }
+            { emoji: "🔄", texto: "Repetir consulta",       desc: "Hacer otra búsqueda similar",     accion: contextoActual, color: 'blue' },
+            { emoji: "🏠", texto: "Menú principal",         desc: "Ver todas las opciones",          accion: "inicio",        color: 'gray' },
+            { emoji: "✍️", texto: "Pregunta personalizada", desc: "Escribe lo que necesitas",        accion: "input",  placeholder: "Escribe tu pregunta...", color: 'teal' }
         ];
         
+        const grid = document.createElement('div');
+        grid.className = 'grid grid-cols-1 sm:grid-cols-3 gap-3';
+
         opciones.forEach(opcion => {
+            const colors = colorMap[opcion.color] || colorMap.gray;
             const button = document.createElement('button');
-            button.className = 'text-left px-4 py-3 bg-white hover:bg-brand-50 border border-gray-300 hover:border-brand-400 rounded-lg transition-all text-sm font-medium text-gray-600 hover:text-brand-700';
-            button.textContent = opcion.texto;
-            
+            button.className = `suggestion-btn group text-left p-4 bg-white border ${colors.border} ${colors.hover} rounded-2xl transition-all duration-200 flex flex-col gap-2 animate-fade-in`;
+            button.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <span class="text-xl leading-none flex-shrink-0">${opcion.emoji}</span>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-800 group-hover:text-gray-900 leading-tight">${opcion.texto}</p>
+                        <p class="text-xs text-gray-400 mt-0.5">${opcion.desc}</p>
+                    </div>
+                </div>
+            `;
             button.onclick = () => {
                 if (opcion.accion === 'input') {
                     activarInput(opcion.placeholder);
@@ -599,9 +802,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     mostrarOpciones(opcion.accion);
                 }
             };
-            
-            suggestionsWrapper.appendChild(button);
+            grid.appendChild(button);
         });
+        suggestionsWrapper.appendChild(grid);
     }
     
     // Inicializar con mensaje de bienvenida y menú
@@ -651,14 +854,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateConnectionStatus(isConnected, message = '') {
         const statusDot = connectionStatus.querySelector('.w-2');
-        const statusText = connectionStatus.querySelector('.text-sm');
+        const statusText = connectionStatus.querySelector('.text-xs');
+        
+        connectionStatus.classList.remove('hidden');
+        connectionStatus.classList.add('flex');
         
         if (isConnected) {
-            statusDot.className = 'w-2 h-2 bg-green-400 rounded-full animate-pulse';
+            statusDot.className = 'w-2 h-2 bg-emerald-400 rounded-full status-pulse';
             statusText.textContent = message || 'Conectado';
+            statusText.className = 'text-emerald-200 text-xs font-medium';
         } else {
             statusDot.className = 'w-2 h-2 bg-red-400 rounded-full';
             statusText.textContent = message || 'Desconectado';
+            statusText.className = 'text-white/80 text-xs font-medium';
         }
     }
 
@@ -751,24 +959,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function addMessage(message, isUser = false) {
         const messageDiv = document.createElement('div');
-        messageDiv.className = `flex items-start space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`;
+        messageDiv.className = `flex items-end gap-3 message-animate ${isUser ? 'flex-row-reverse' : ''}`;
 
         const timestamp = new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
 
         // Formatear el mensaje del bot
         const formattedMessage = isUser ? escapeHtml(message) : formatBotResponse(message);
 
-        messageDiv.innerHTML = `
-            <div class="w-8 h-8 ${isUser ? 'bg-brand-600' : 'bg-brand-100'} rounded-full flex items-center justify-center flex-shrink-0">
-                ${isUser ? '<svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>' : '<svg class="w-5 h-5 text-brand-600" fill="currentColor" viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path></svg>'}
-            </div>
-            <div class="flex-1">
-                <div class="${isUser ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-800'} rounded-lg px-4 py-3 inline-block max-w-3xl">
-                    <p class="leading-relaxed">${formattedMessage}</p>
+        if (isUser) {
+            messageDiv.innerHTML = `
+                <div class="w-8 h-8 bg-brand-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
                 </div>
-                <p class="text-xs text-gray-500 mt-1 ${isUser ? 'text-right' : ''}">${timestamp}</p>
-            </div>
-        `;
+                <div class="flex flex-col items-end max-w-[75%]">
+                    <div class="chat-bubble-user text-white px-4 py-3">
+                        <p class="text-sm leading-relaxed">${formattedMessage}</p>
+                    </div>
+                    <span class="text-[10px] text-gray-400 mt-1.5 mr-1">${timestamp}</span>
+                </div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="w-8 h-8 bg-gradient-to-br from-brand-100 to-brand-200 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"></path></svg>
+                </div>
+                <div class="flex flex-col max-w-[80%]">
+                    <div class="chat-bubble-bot px-4 py-3">
+                        <div class="text-sm leading-relaxed text-gray-700 prose-sm">${formattedMessage}</div>
+                    </div>
+                    <span class="text-[10px] text-gray-400 mt-1.5 ml-1">${timestamp}</span>
+                </div>
+            `;
+        }
 
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -777,8 +999,19 @@ document.addEventListener('DOMContentLoaded', function() {
     function showTypingIndicator() {
         const typingDiv = document.createElement('div');
         typingDiv.id = 'typing-indicator';
-        typingDiv.className = 'flex items-start space-x-3';
-        typingDiv.innerHTML = '<div class="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center flex-shrink-0"><svg class="w-5 h-5 text-brand-600" fill="currentColor" viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path></svg></div><div class="flex-1"><div class="bg-gray-100 rounded-lg px-4 py-3 inline-block"><div class="typing-indicator flex space-x-1"><span class="w-2 h-2 bg-gray-500 rounded-full"></span><span class="w-2 h-2 bg-gray-500 rounded-full"></span><span class="w-2 h-2 bg-gray-500 rounded-full"></span></div></div></div>';
+        typingDiv.className = 'flex items-end gap-3 message-animate';
+        typingDiv.innerHTML = `
+            <div class="w-8 h-8 bg-gradient-to-br from-brand-100 to-brand-200 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"></path></svg>
+            </div>
+            <div class="chat-bubble-bot px-5 py-3.5">
+                <div class="typing-indicator flex items-center gap-1.5">
+                    <span class="w-2 h-2 bg-brand-400 rounded-full"></span>
+                    <span class="w-2 h-2 bg-brand-400 rounded-full"></span>
+                    <span class="w-2 h-2 bg-brand-400 rounded-full"></span>
+                </div>
+            </div>
+        `;
         chatMessages.appendChild(typingDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
@@ -899,9 +1132,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const reader = new FileReader();
             reader.onload = function(e) {
                 imagePreview.src = e.target.result;
+                const fileNameEl = document.getElementById('image-file-name');
+                if (fileNameEl) fileNameEl.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
                 imagePreviewContainer.classList.remove('hidden');
-                attachImageBtn.classList.add('bg-brand-100', 'text-brand-600');
-                attachImageBtn.classList.remove('bg-gray-100', 'text-gray-600');
+                attachImageBtn.classList.add('bg-brand-50', 'text-brand-500', 'border-brand-300');
+                attachImageBtn.classList.remove('bg-gray-50', 'text-gray-400', 'border-gray-200');
             };
             reader.readAsDataURL(file);
         }
@@ -913,8 +1148,8 @@ document.addEventListener('DOMContentLoaded', function() {
         imageInput.value = '';
         imagePreviewContainer.classList.add('hidden');
         imagePreview.src = '';
-        attachImageBtn.classList.remove('bg-brand-100', 'text-brand-600');
-        attachImageBtn.classList.add('bg-gray-100', 'text-gray-600');
+        attachImageBtn.classList.remove('bg-brand-50', 'text-brand-500', 'border-brand-300');
+        attachImageBtn.classList.add('bg-gray-50', 'text-gray-400', 'border-gray-200');
     });
     
     /**
@@ -1378,8 +1613,8 @@ document.addEventListener('DOMContentLoaded', function() {
             imageInput.value = '';
             imagePreviewContainer.classList.add('hidden');
             imagePreview.src = '';
-            attachImageBtn.classList.remove('bg-brand-100', 'text-brand-600');
-            attachImageBtn.classList.add('bg-gray-100', 'text-gray-600');
+            attachImageBtn.classList.remove('bg-brand-50', 'text-brand-500', 'border-brand-300');
+            attachImageBtn.classList.add('bg-gray-50', 'text-gray-400', 'border-gray-200');
             
             // Limpiar input de mensaje
             messageInput.value = '';
