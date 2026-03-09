@@ -265,6 +265,108 @@
         .widget-typing span { animation: widget-bounce 1.4s infinite; }
         .widget-typing span:nth-child(2) { animation-delay: 0.2s; }
         .widget-typing span:nth-child(3) { animation-delay: 0.4s; }
+        
+        /* Quick Actions Panel */
+        #widget-quick-panel {
+            flex-shrink: 0;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #f8fafc;
+            border-top: 1.5px solid #e2e8f0;
+        }
+        #widget-quick-panel.open { max-height: 210px; }
+        .wqp-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px 3px;
+        }
+        .wqp-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 9.5px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .wqp-breadcrumb svg { width: 10px; height: 10px; stroke: #94a3b8; }
+        .wqp-nav { display: flex; align-items: center; gap: 2px; }
+        .wqp-nav button {
+            background: none; border: none; cursor: pointer;
+            color: #94a3b8; padding: 3px; border-radius: 4px;
+            display: flex; align-items: center; transition: all 0.15s;
+        }
+        .wqp-nav button:hover { color: #475569; background: #e2e8f0; }
+        .wqp-nav button svg { width: 13px; height: 13px; }
+        .wqp-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+            padding: 2px 8px 8px;
+            overflow-y: auto;
+            max-height: 162px;
+        }
+        .wqp-grid::-webkit-scrollbar { width: 3px; }
+        .wqp-grid::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .wqp-chip {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 9px;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            user-select: none;
+        }
+        .wqp-chip:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+        .wqp-chip:active { transform: none; box-shadow: none; }
+        .wqp-chip.violet { border-color: #ddd6fe; background: #faf5ff; }
+        .wqp-chip.violet:hover { background: #ede9fe; border-color: #c4b5fd; }
+        .wqp-chip.violet .wqp-ci { background: #7c3aed; }
+        .wqp-chip.blue { border-color: #bfdbfe; background: #eff6ff; }
+        .wqp-chip.blue:hover { background: #dbeafe; border-color: #93c5fd; }
+        .wqp-chip.blue .wqp-ci { background: #2563eb; }
+        .wqp-chip.cyan { border-color: #a5f3fc; background: #ecfeff; }
+        .wqp-chip.cyan:hover { background: #cffafe; border-color: #67e8f9; }
+        .wqp-chip.cyan .wqp-ci { background: #0891b2; }
+        .wqp-chip.teal { border-color: #99f6e4; background: #f0fdfa; }
+        .wqp-chip.teal:hover { background: #ccfbf1; border-color: #5eead4; }
+        .wqp-chip.teal .wqp-ci { background: #0d9488; }
+        .wqp-chip.amber { border-color: #fde68a; background: #fffbeb; }
+        .wqp-chip.amber:hover { background: #fef3c7; border-color: #fcd34d; }
+        .wqp-chip.amber .wqp-ci { background: #d97706; }
+        .wqp-chip.green { border-color: #bbf7d0; background: #f0fdf4; }
+        .wqp-chip.green:hover { background: #dcfce7; border-color: #86efac; }
+        .wqp-chip.green .wqp-ci { background: #16a34a; }
+        .wqp-chip.gray { border-color: #e2e8f0; background: #f8fafc; }
+        .wqp-chip.gray:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .wqp-chip.gray .wqp-ci { background: #475569; }
+        .wqp-chip.back {
+            grid-column: span 2; justify-content: center;
+            border-style: dashed; background: transparent; box-shadow: none;
+        }
+        .wqp-chip.back:hover { background: #f1f5f9; border-style: solid; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+        .wqp-chip.back .wqp-ci { background: #94a3b8; }
+        .wqp-ci {
+            width: 24px; height: 24px; border-radius: 6px;
+            flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+        }
+        .wqp-ci svg { width: 12px; height: 12px; stroke: #fff; fill: none; }
+        .wqp-label {
+            font-size: 11px; font-weight: 600;
+            color: #1e293b; line-height: 1.25; letter-spacing: -0.01em;
+        }
+        .wqp-chip.back .wqp-label { color: #64748b; font-weight: 500; font-size: 10.5px; }
+        /* Toggle button active state */
+        #widget-quick-toggle.active { background: #eff6ff; color: #2563eb; }
+        #widget-quick-toggle.active svg { stroke: #2563eb; }
     </style>
 
     <div id="widget-container" class="fixed bottom-6 right-6 z-50">
@@ -324,9 +426,34 @@
             <div id="widget-chat-messages" class="flex-1 overflow-y-auto px-3 py-3 space-y-3">
             </div>
 
+            <!-- Panel de acciones rápidas (colapsable) -->
+            <div id="widget-quick-panel">
+                <div class="wqp-header">
+                    <div class="wqp-breadcrumb">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <span id="wqp-title">Acciones rápidas</span>
+                    </div>
+                    <div class="wqp-nav">
+                        <button id="wqp-back" class="hidden" title="Volver">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                        </button>
+                        <button id="wqp-close" title="Cerrar">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="wqp-grid" class="wqp-grid"></div>
+            </div>
+
             <!-- Input -->
-            <div class="border-t border-gray-100 px-3 py-3 bg-white flex-shrink-0">
-                <form id="widget-form" class="flex space-x-2">
+            <div class="border-t border-gray-100 px-3 py-2.5 bg-white flex-shrink-0">
+                <form id="widget-form" class="flex items-center space-x-2">
+                    <button type="button" id="widget-quick-toggle" title="Acciones rápidas"
+                        class="flex-shrink-0 w-8 h-8 rounded-lg border border-gray-200 bg-gray-50 hover:bg-blue-50 hover:border-blue-200 text-gray-400 hover:text-blue-500 flex items-center justify-center transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </button>
                     <input
                         type="text"
                         id="widget-input"
@@ -334,7 +461,7 @@
                         autocomplete="off"
                         class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                     >
-                    <button type="submit" id="widget-send" class="bg-brand-600 hover:bg-brand-700 text-white rounded-lg px-3 py-2 transition flex items-center justify-center disabled:opacity-50">
+                    <button type="submit" id="widget-send" class="flex-shrink-0 bg-brand-600 hover:bg-brand-700 text-white rounded-lg px-3 py-2 transition flex items-center justify-center disabled:opacity-50">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                         </svg>
@@ -369,8 +496,91 @@
             const iconOpen       = document.getElementById('widget-icon-open');
             const iconClose      = document.getElementById('widget-icon-close');
 
-            let widgetOpened  = false;
-            let isFirstOpen   = true;
+            const widgetQuickPanel  = document.getElementById('widget-quick-panel');
+            const widgetQuickToggle = document.getElementById('widget-quick-toggle');
+            const wqpGrid           = document.getElementById('wqp-grid');
+            const wqpTitle          = document.getElementById('wqp-title');
+            const wqpBack           = document.getElementById('wqp-back');
+            const wqpClose          = document.getElementById('wqp-close');
+
+            let widgetOpened    = false;
+            let isFirstOpen     = true;
+            let widgetContexto  = 'inicio';
+            let panelHistorial  = [];
+
+            // -----------------------------------------------------------------
+            // Categorías de consulta (acciones rápidas)
+            // -----------------------------------------------------------------
+            const widgetCategorias = {
+                inicio: {
+                    mensaje: "¡Hola! 👋 Soy el asistente de inventario.\n¿Qué te gustaría consultar?",
+                    opciones: [
+                        { emoji: "📅", texto: "Agendar reunión", desc: "Programa una cita", accion: "agendar_reunion", color: "violet" },
+                        { emoji: "🔍", texto: "Buscar activo", desc: "Por código o serie", accion: "buscar_activo", color: "blue" },
+                        { emoji: "👤", texto: "Asignaciones", desc: "Activos asignados", accion: "ver_asignaciones", color: "cyan" },
+                        { emoji: "📍", texto: "Ubicaciones", desc: "Por edificio o área", accion: "consultar_ubicacion", color: "teal" },
+                        { emoji: "🔧", texto: "Mantenimientos", desc: "Pendientes e historial", accion: "ver_mantenimientos", color: "amber" },
+                        { emoji: "📊", texto: "Disponibilidad", desc: "Stock disponible", accion: "ver_disponibilidad", color: "green" },
+                        { emoji: "💬", texto: "Pregunta libre", desc: "Escribe tu consulta", accion: "pregunta_libre", color: "gray" }
+                    ]
+                },
+                agendar_reunion: {
+                    mensaje: "Para agendar una reunión, escribe los detalles:\n• Asunto\n• Fecha y hora\n• Participantes",
+                    opciones: [
+                        { emoji: "⬅️", texto: "Volver al inicio", desc: "Menú principal", accion: "inicio", esVolver: true }
+                    ]
+                },
+                buscar_activo: {
+                    mensaje: "¿Qué información tienes del activo?",
+                    opciones: [
+                        { emoji: "📟", texto: "Código", desc: "Ej: ACT-001", accion: "input", placeholder: "Escribe el código..." },
+                        { emoji: "🏷️", texto: "Marca/Modelo", desc: "Ej: Dell, HP", accion: "input", placeholder: "Escribe marca o modelo..." },
+                        { emoji: "🔢", texto: "Núm. serie", desc: "Código fabricante", accion: "input", placeholder: "Escribe el número de serie..." },
+                        { emoji: "⬅️", texto: "Volver al inicio", desc: "Menú principal", accion: "inicio", esVolver: true }
+                    ]
+                },
+                ver_asignaciones: {
+                    mensaje: "¿De quién quieres ver las asignaciones?",
+                    opciones: [
+                        { emoji: "👤", texto: "Por persona", desc: "Buscar por nombre", accion: "input", placeholder: "Nombre de la persona..." },
+                        { emoji: "📋", texto: "Todas", desc: "Listado completo", query: "Muéstrame todas las asignaciones activas" },
+                        { emoji: "⬅️", texto: "Volver al inicio", desc: "Menú principal", accion: "inicio", esVolver: true }
+                    ]
+                },
+                consultar_ubicacion: {
+                    mensaje: "¿Qué ubicación te interesa?",
+                    opciones: [
+                        { emoji: "🏢", texto: "Edificio A", desc: "Ver activos", query: "¿Qué activos hay en el Edificio A?" },
+                        { emoji: "🏢", texto: "Edificio B", desc: "Ver activos", query: "¿Qué activos hay en el Edificio B?" },
+                        { emoji: "📍", texto: "Otra ubicación", desc: "Piso o área", accion: "input", placeholder: "Escribe el piso o área..." },
+                        { emoji: "⬅️", texto: "Volver al inicio", desc: "Menú principal", accion: "inicio", esVolver: true }
+                    ]
+                },
+                ver_mantenimientos: {
+                    mensaje: "¿Qué información necesitas?",
+                    opciones: [
+                        { emoji: "⚠️", texto: "Pendientes", desc: "Requieren atención", query: "¿Qué activos necesitan mantenimiento?" },
+                        { emoji: "🔧", texto: "Realizados", desc: "Historial reciente", query: "Muéstrame los últimos mantenimientos" },
+                        { emoji: "🔍", texto: "Por activo", desc: "Buscar específico", accion: "input", placeholder: "Código del activo..." },
+                        { emoji: "⬅️", texto: "Volver al inicio", desc: "Menú principal", accion: "inicio", esVolver: true }
+                    ]
+                },
+                ver_disponibilidad: {
+                    mensaje: "¿Qué tipo de activos necesitas ver?",
+                    opciones: [
+                        { emoji: "✅", texto: "Disponibles", desc: "Listos para asignar", query: "¿Qué activos están disponibles?" },
+                        { emoji: "🔴", texto: "Ocupados", desc: "Ya asignados", query: "Muéstrame los activos ocupados" },
+                        { emoji: "📊", texto: "Resumen", desc: "Vista general", query: "Dame un resumen de disponibilidad" },
+                        { emoji: "⬅️", texto: "Volver al inicio", desc: "Menú principal", accion: "inicio", esVolver: true }
+                    ]
+                },
+                pregunta_libre: {
+                    mensaje: "Escribe tu pregunta libremente. Puedo ayudarte con:\n• Activos y ubicaciones\n• Asignaciones y personas\n• Mantenimientos",
+                    opciones: [
+                        { emoji: "⬅️", texto: "Volver al inicio", desc: "Ver opciones", accion: "inicio", esVolver: true }
+                    ]
+                }
+            };
 
             // -----------------------------------------------------------------
             // Abrir / cerrar
@@ -386,7 +596,10 @@
 
                 if (isFirstOpen) {
                     isFirstOpen = false;
-                    widgetAddMessage('¡Hola! 👋 Soy el asistente de inventario.\n¿En qué puedo ayudarte hoy?', false);
+                    widgetAddMessage('¡Hola! 👋 Soy el asistente de inventario.\n¿En qué puedo ayudarte?', false);
+                    widgetRenderPanel('inicio');
+                    widgetQuickPanel.classList.add('open');
+                    widgetQuickToggle.classList.add('active');
                 }
 
                 setTimeout(() => widgetInput.focus(), 100);
@@ -406,8 +619,132 @@
             widgetNewChat.addEventListener('click', function() {
                 widgetMessages.innerHTML = '';
                 isFirstOpen = false;
+                panelHistorial = [];
+                widgetRenderPanel('inicio');
+                widgetQuickPanel.classList.add('open');
+                widgetQuickToggle.classList.add('active');
                 widgetAddMessage('¡Chat reiniciado! 🔄 ¿Qué deseas consultar?', false);
             });
+
+            // Toggle panel
+            widgetQuickToggle.addEventListener('click', function() {
+                const isOpen = widgetQuickPanel.classList.contains('open');
+                if (isOpen) {
+                    widgetQuickPanel.classList.remove('open');
+                    widgetQuickToggle.classList.remove('active');
+                } else {
+                    widgetRenderPanel(widgetContexto);
+                    widgetQuickPanel.classList.add('open');
+                    widgetQuickToggle.classList.add('active');
+                }
+            });
+
+            // Panel back / close
+            wqpBack.addEventListener('click', function() {
+                if (panelHistorial.length > 0) {
+                    const prev = panelHistorial.pop();
+                    widgetRenderPanel(prev, false);
+                }
+            });
+            wqpClose.addEventListener('click', function() {
+                widgetQuickPanel.classList.remove('open');
+                widgetQuickToggle.classList.remove('active');
+            });
+
+            // -----------------------------------------------------------------
+            // Panel de acciones rápidas
+            // -----------------------------------------------------------------
+            const wqpIcons = {
+                agendar_reunion:     `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`,
+                buscar_activo:       `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>`,
+                ver_asignaciones:    `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`,
+                consultar_ubicacion: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>`,
+                ver_mantenimientos:  `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>`,
+                ver_disponibilidad:  `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>`,
+                pregunta_libre:      `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>`,
+                input:               `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>`,
+                query:               `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>`,
+                inicio:              `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>`,
+            };
+
+            const wqpTitles = {
+                inicio: 'Acciones rápidas',
+                agendar_reunion: 'Agendar reunión',
+                buscar_activo: 'Buscar activo',
+                ver_asignaciones: 'Asignaciones',
+                consultar_ubicacion: 'Ubicaciones',
+                ver_mantenimientos: 'Mantenimientos',
+                ver_disponibilidad: 'Disponibilidad',
+                pregunta_libre: 'Pregunta libre',
+            };
+
+            function widgetRenderPanel(contextoId, pushHistory = true) {
+                const contexto = widgetCategorias[contextoId];
+                if (!contexto) return;
+
+                if (pushHistory && widgetContexto !== contextoId && widgetContexto) {
+                    panelHistorial.push(widgetContexto);
+                }
+                widgetContexto = contextoId;
+
+                // Header
+                wqpTitle.textContent = wqpTitles[contextoId] || 'Acciones rápidas';
+                if (panelHistorial.length > 0) {
+                    wqpBack.classList.remove('hidden');
+                } else {
+                    wqpBack.classList.add('hidden');
+                }
+
+                // Grid
+                wqpGrid.innerHTML = '';
+                contexto.opciones.forEach((op, idx) => {
+                    const colorClass = op.esVolver ? 'gray back' : (op.color || 'gray');
+                    let iconSvg;
+                    if (op.esVolver) iconSvg = wqpIcons.inicio;
+                    else if (op.accion === 'input') iconSvg = wqpIcons.input;
+                    else if (op.query) iconSvg = wqpIcons.query;
+                    else iconSvg = wqpIcons[op.accion] || wqpIcons.pregunta_libre;
+
+                    const chip = document.createElement('div');
+                    chip.className = `wqp-chip ${colorClass}`;
+                    chip.title = op.desc;
+                    chip.innerHTML = `<div class="wqp-ci">${iconSvg}</div><span class="wqp-label">${op.texto}</span>`;
+                    chip.addEventListener('click', () => widgetHandleQuickAction(contextoId, idx));
+                    wqpGrid.appendChild(chip);
+                });
+            }
+
+            // Alias por compatibilidad
+            function widgetMostrarContexto(contextoId) { widgetRenderPanel(contextoId); }
+
+            function widgetHandleQuickAction(contextoId, idx) {
+                const contexto = widgetCategorias[contextoId];
+                if (!contexto || !contexto.opciones[idx]) return;
+                const opcion = contexto.opciones[idx];
+
+                if (opcion.query) {
+                    widgetSendMessage(opcion.query);
+                    widgetQuickPanel.classList.remove('open');
+                    widgetQuickToggle.classList.remove('active');
+                    return;
+                }
+                if (opcion.accion === 'input') {
+                    widgetInput.placeholder = opcion.placeholder || 'Escribe tu mensaje...';
+                    widgetQuickPanel.classList.remove('open');
+                    widgetQuickToggle.classList.remove('active');
+                    widgetInput.focus();
+                    return;
+                }
+                if (opcion.esVolver && panelHistorial.length > 0) {
+                    const prev = panelHistorial.pop();
+                    widgetRenderPanel(prev, false);
+                    return;
+                }
+                if (opcion.accion && widgetCategorias[opcion.accion]) {
+                    widgetRenderPanel(opcion.accion);
+                    return;
+                }
+            }
 
             // -----------------------------------------------------------------
             // Añadir mensaje
@@ -557,6 +894,7 @@
                 } finally {
                     widgetSend.disabled = false;
                     widgetInput.disabled = false;
+                    widgetInput.placeholder = 'Escribe tu mensaje...';
                     widgetInput.focus();
                 }
             }
